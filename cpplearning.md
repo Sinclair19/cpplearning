@@ -169,3 +169,77 @@ int *p3 = NULL
 void* 指针
 
 ### 2.3.3 理解复合类型的声明
+
+## 2.4 `const`限定符
+其值不能被改变
+
+`const`对象必须初始化
+
+默认情况下，`const`对象被设定为仅在文件内有效，当多个文件中出现了同名const对象时，等同于在不同文件中分别定义了独立的变量
+
+`extern const`只在一个文件中定义，其他文件中声明并使用
+
+### 2.4.1 `const`的引用
+对常量的引用
+
+```cpp
+double dval = 3.14
+const int &ri = dval
+```
+等效于
+```cpp
+double dval = 3.14
+const int temp = dval
+const int &ri = temp
+```
+
+### 2.4.2 指针和`const`
+指向常量的指针不能用于改变其所指对象的值，要想存放常量对象的地址，只能使用指向常量的指针
+
+`const`指针
+常量指针必须初始化
+
+### 2.4.3 顶层`const`
+
+顶层`const`表示指针本身是个常量
+底层`const`表示指针所指的对象是一个常量
+
+
+### 2.4.4 `constexpr`和常量表达式
+
+常量表达式指不会改变并且编译过程就能得到计算机过的表达式
+
+`constexpr`变量
+C++ 11中允许用此来验证变量的值是否为一个常量表达式
+
+字面值类型
+一个`constexpr`指针的初始值必须是`nullptr`或者`0`，或者是存储于某个固定地址的对象
+
+指针和`constexpr`
+```cpp
+const int *p = nullptr;
+constexpr int *q = nullptr;
+```
+
+## 2.5 处理类型
+
+### 2.5.1 类型别名
+`using a = b`
+
+指针、常量和类型别名
+```cpp
+typedef char *pstring;
+const pstring cstr =0;
+const pstring *ps;
+```
+
+### 2.5.2 `auto`类型说明符
+`auto item = a + b`
+
+### 2.5.3 `decltype`类型指示符
+`decltype(f()) sum = x;`
+
+decltype((variable))的结果永远是引用
+decltype(variable)的结果只有当variable本身就是一个引用是才是引用
+
+
