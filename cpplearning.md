@@ -242,4 +242,39 @@ const pstring *ps;
 decltype((variable))的结果永远是引用
 decltype(variable)的结果只有当variable本身就是一个引用是才是引用
 
+## 2.6 自定义数据结构
+
+### 2.6.1 定义 Sales_data 类型
+
+类关键词
+`struct` 紧跟类名和类体
+类体由花括号包围形成一个心得作用域
+
+类内由数据成员
+c++11开始可以为数据成员提供一个类内初始值
+
+```cpp
+sturct name {/*    */};
+```
+
+### 2.6.2 使用 Sales_data 类型
+
+### 2.6.3 编写自己的头文件
+头文件保护符
+`#define`将一个名字设定为预处理变量
+`#ifdef`当且仅当变量已定义时为真
+`#ifndef`当且仅当变量未定义时为真
+`#endif`一旦检查结果为真，则执行后续操作直至遇到其为止
+```cpp
+#ifndef SALES_DATA_H
+#define SALES_DATA_H
+#include<string>
+struct Sales_data{
+	std::string bookNo;
+	unsigned units_sold = 0;
+	double revenue = 0.0;
+};
+#endif
+```
+
 
