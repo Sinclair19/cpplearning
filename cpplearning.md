@@ -248,7 +248,7 @@ decltype(variable)的结果只有当variable本身就是一个引用是才是引
 
 类关键词
 `struct` 紧跟类名和类体
-类体由花括号包围形成一个心得作用域
+类体由花括号包围形成一个新的作用域
 
 类内由数据成员
 c++11开始可以为数据成员提供一个类内初始值
@@ -277,4 +277,113 @@ struct Sales_data{
 #endif
 ```
 
+# 3 字符串、向量和数组
 
+## 3.1 命名空间的 `using` 声明
+形式
+```cpp
+using namespace::name;
+```
+
+# 3.2 标准库类型 `string`
+`using std::string`
+
+# 3.2.1 定义和初始化 `string` 对象
+默认初始化为一个空字符串
+
+直接初始化与拷贝初始化
+- 拷贝初始化 通过等号初始化一个变量
+- 直接初始化 不适用等号初始化一个变量
+
+# 3.2.2 `string` 对象上的操作
+
+- 读写 `string` 对象
+	- 使用IO操作符读写`string`对象
+	```cpp
+	string s;
+	cin >> s;
+	cout << s << endl;
+	```
+- 读取未知数量的 `string` 对象
+	- eg
+	```cpp
+	int main(){
+		string word;
+		while (cin>>word)
+			cout << word << endl;
+		return 0;
+	}
+	```
+- 使用 `getline` 读取一整行
+	- eg
+	```cpp
+	int main(){
+		string line;
+		while (getline(cin,line))
+			cout << line << endl;
+		return 0;
+	}
+	```
+- `string` 的 empty 和 size 操作
+	- empty
+		- 根据 `string` 对象是否为空返回一个对应的布尔值
+		```cpp
+		while (getline(cin,line))
+			if (!line.empty())
+				cout << line << endl;
+	- size
+		- 返回 `string` 对象的长度
+- `string::size_type` 类型
+	- size 函数返回一个无符号整型数，含有size()函数尽量不适用 int 
+- 比较 `string` 对象
+	- 大小写敏感
+	- == 和 != 分别校验两个 `string` 对象相等或不相等
+	- 相等意味着长度相同而且包含的字符也完全相同
+	- <,<=,>,>=
+		- 长度不同，且已有位数相同，较短字符串小
+		- 有不同，比较第一个相异位字符
+- 为 `string` 对象赋值
+	- 使用加法不能将两个字面值相加，可以字符串变量与字面值相加
+	错误 `string s1 = "Hello" + "World";`
+	正确 `string s2 = s1 + "World"` 
+
+	- 字符串字面值与 `string` 是不同的类型
+
+### 3.2.3 处理 `string` 对象中的字符
+- cctype 头文件中的函数
+	- `isalnum()` 但字符为字母或数字时为真
+	- `isalpha()` 函数来检查字符是否为字母字符；
+	- `isdigits()` 函数来测试字符是否为数字字符；
+	- `isspace()` 测试字符是否为空白，如换行符、空格和制表符；
+	- `ispunct()` 函数来测试字符是否为标点符号
+	- `islower()` 函数来判断参数是否是小写字母，若是返回true
+	- `isupper()` 函数来判断参数是否是大写字母，若是返回true
+	- `tolower()` 函数：如果参数是大写字母，则返回其小写，否则返回该参数
+	- `toupper()` 函数：如果参数是小写字母，则返回其大写，否则返回该参数
+
+- 使用 for 处理每个字符
+	- 
+	```cpp
+	for (declaration : expression)
+		statement
+	```
+
+- 使用范围 for 语句改变字符串中的字符
+	-eg
+	```cpp 将字符串中字母转换为大写
+	string s('abc');
+	for (auto &c : s)
+		c = toupper(c);
+	cout << s << endl;
+	`
+- 只处理一部分字符
+	- 下标运算符  
+	- 使用下标执行迭代
+		- eg 
+		```cpp
+		string s;
+		for (decltype(s.size()) index = 0 ; index != s.size() && isspace(s[index]); ++index)
+			s[index] = toupper(s[index]);
+		```
+- 使用下标执行随机访问
+	- 使用字符串下标需检查其合理性
