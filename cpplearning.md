@@ -387,3 +387,124 @@ using namespace::name;
 		```
 - 使用下标执行随机访问
 	- 使用字符串下标需检查其合理性
+
+## 3.3 `vector`
+表示对象的集合，其中所有对象的类型都相同
+需要包含头文件
+```cpp
+#include<vector>
+using std::vector;
+```
+vector为类模板，编译器根据模板创建类或函数的过程称为实体化
+
+### 3.3.1 定义和初始化 `vector`对象
+|初始化方法|说明|
+|---|---|
+|`vector<T> v1`|v1为空vector，其元素为T类型，执行默认初始化|
+|`vector<T> v2(v1)`等同于`vector<T> v2=v1`|为v1副本|
+|`vector<T> v3(n,val)`|n个值为val的元素|
+|`vector<T> v4(a,c,c)`|初始化元素的个数，每个对应初始值|
+
+- 列表初始化vector对象
+	- eg `vector<string> articles = {"a","b","c"};`
+- 创建指定数量的元素
+	- eg `vector<string> v1(10,-1)`
+- 值初始化
+	- eg `vector<string> v1(10)` 10个元素每个初始化为0
+
+### 3.3.2 向 `vector` 对象中添加元素
+`push_back`将元素添加对vector对象尾端
+eg
+```cpp
+vector<int> v2;
+for (int i=0; i!=100,++i)
+	v2.push_back(i)
+```
+
+### 3.3.3 其他 `vector` 操作
+- v.empty() 返回类型 布尔值
+- v.size() 返回类型 size_type
+- v[n]
+
+- 计算 `vector` 内对象的索引
+
+## 3.4 迭代器的介绍
+有效迭代器指向某个元素或者指向尾元素的下一位置
+
+### 3.4.1 使用迭代器
+```cpp
+auto b = v.begin()
+auto e = v.end()
+```
+- 迭代器运算符
+	- 如果连个迭代器指向的元素相同或者都是同一个容器的尾后迭代器，则相等
+
+	|运算符|说明|
+	|---|---|
+	|`*iter`|返回迭代器 `iter` 所指元素的额引用|
+	|`iter->mem`|解引用 `iter` 并获取该元素名为 `mem` 的成员，等价于 `(*iter).mem` |
+	|`++iter` |下一个元素|
+	|`--iter` |上一个元素|
+	|`iter1 == iter2` `iter1 != iter2`|判断是否相等|
+
+- 将迭代器从一个元素移动到另一个元素
+	- eg
+	```cpp
+	for (auto it = s.begin(); it != s.end() && !isspace(*it); ++it)
+		*it = toupper(*it);
+	```
+
+- 迭代器类型
+	- `iterator`
+	- `const_iterator`
+
+- begin 和 end 运算符
+	- `iterator`
+	- `const_iterator`
+
+- 结合解引用和成员访问操作
+	- `(*it).empty()`
+	- 箭头运算符(->)
+		- eg
+		```cpp
+		for (auto it = text.cbegin(); it != text.cend() && !it->emtpy(); ++it)
+			cout << *it << endl;
+		```
+
+- 某些对 `vector` 对象的操作会导致迭代器失效
+	- 在范围 `for` 循环中向 `vector` 对象添加元素
+
+### 3.4.2 迭代器的运算
+
+|vector和string迭代器支持的运算|说明|
+|---|---|
+|`iter + n`|向前移动了n个元素|
+|`iter - n`|向后移动了n个元素|
+|`iter += n`|将iter1加n的结果赋给iter1|
+|`iter -= n`|将iter1减n的结果赋给iter1|
+|`iter1 - iter2`|两个迭代器之间的距离|
+|>,>=,<,<=|大小判断|
+
+- 迭代器的算术运算
+	- 迭代器与整数值加减，向前或向后移动若干个位置
+		- eg
+		```cpp
+		auto mid = vi.begin() + vi.size()/2
+		```
+	- 相减得到距离，类型为 `difference_type` 的带符号整数型
+
+- 使用迭代器运算
+迭代器二分搜索
+```cpp
+auto beg = text.begin(), end = text.end();
+auto mid = text.begin() + (end-beg)/2;
+while(mid != end && *mid != sought){
+	if(sought < *mid)
+		end = mid;
+	else
+		beg = mid + 1
+	mid = beg + (end - beg)/2
+}
+```
+
+
