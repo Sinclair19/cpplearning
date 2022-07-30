@@ -557,3 +557,86 @@ cout << endl;
 	- 两指针相减结果为他们的距离(类型`ptrdiff_t`)
 
 - 下标和指针
+
+### 3.5.4 C 风格字符串
+按照此习惯书写的字符串存放在字符数组中并以空字符结束
+
+- C 标砖库 String 函数
+	- 
+	|||
+	|---|---|
+	|strlen(p)|返回p的长度，空字符串不计算在内|
+	|strcmp(p1, p2)|比较p1和p2的相等性，如果 p1==p2 ，返回0，如果 p1 > p2，返回正值，如果p1 < p2 返回一个负值|
+	|strcat(p1, p2)|将p2附加到p1之后，返回p1|
+	|strcpy(p1, p2)|将p2拷贝给p1，返回p1|
+
+- 比较字符串
+	- string 关系运算符，相等运算符
+	- char strcmp 函数
+
+- 目标字符串的大小由调用者决定
+
+### 3.5.5 与旧代码的接口
+- 混用 string 对象和 C 风格字符串
+	- 允许使用以空字符串结束的字符数组来初始化string对象或为string对象赋值
+	- 在 string 对象的加法运算中允许使用以空字符串结束的字符串数组作为其中一个运算对象；在 string 对象的复合赋值运算中允许使用以空字符结束的字符数组作为右侧的运算对象
+
+- 使用数组初始化 vector 对象
+	- eg
+	```cpp
+	int int_arr[] = {0,1,2,3,4};
+	vector<int> ivec(begin(int_arr),end(int_arr));
+	```
+
+## 3.6 多维数组
+数组的元素是数组
+
+对于二维数组，常把第一个维度称作行，第二个维度称作列
+```cpp
+int ia[2][3] = {{0,1,2},{3,4,5}}
+int ia[2][3] = {0,1,2,3,4,5}
+//两者等价
+```
+
+- 多维数组的下标引用
+	- 遍历元素
+	```cpp
+	constexpr size_t rowCnt = 3, colCnt = 4;
+	int ia[rowCnt][colCnt];
+	for (size_t i = 0; j != rowCnt; ++i){
+		for (size_t j = 0; j != colCnt; ++j)
+			ia[i][j] = i * colCnt + j;
+	}
+	```
+- 使用范围 for 语句处理多维数组
+	- 简化eg
+	```cpp
+	size_t cnt = 0;
+	for (auto &col : row){
+		col = cnt;
+		++cnt
+	}
+	- notice 外层循环使用引用
+	```cpp
+	for (const auto &row: ia)
+		for (auto col : row)
+			cout<<col<<endl;
+	使用for语句处理多维数组，除了最内层的循环外，其他所有循环的控制变量都应该是引用类型
+- 指针和多维数组
+	- eg
+	```cpp
+	for (auto p = begin(ia); p != end(ia); ++p){
+		for (auto q= begin(*p); q != end(*p); ++q)
+			cout <<*q<< ' ';
+		cout << endl;
+	}
+- 类型别名简化多维数组的指针
+	- eg
+	```cpp
+	using int_array = int[4];
+	typedef int int_array[4]; // 两种声明方式
+	for (int_array *p = ia; p != ia + 3; ++p){
+		for (int *q = *p; q != *p + 4; ++q)
+			cout << *q << " ";
+		cout<< endl;
+	}
