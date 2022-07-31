@@ -362,14 +362,14 @@ using namespace::name;
 	- `toupper()` 函数：如果参数是小写字母，则返回其大写，否则返回该参数
 
 - 使用 for 处理每个字符
-	- 
+	- eg
 	```cpp
 	for (declaration : expression)
 		statement
 	```
 
 - 使用范围 for 语句改变字符串中的字符
-	-eg
+	- eg
 	```cpp 将字符串中字母转换为大写
 	string s('abc');
 	for (auto &c : s)
@@ -703,3 +703,19 @@ while (pbeeg != v.end() && *beg >= 0)
 	cout << *pbeg++ << endl; //输出当前值并将pbeg向前移动一个元素
 	// *pbeg++ = *(pbeg++)
 ```
+
+
+## 4.6 成员访问运算符
+- 点运算符 获取类对象的一个成员
+- 箭头运算符 与点运算符相关 
+
+`ptr->mem` 等价于 `(*ptr).mem`
+
+## 4.7 条件运算符
+条件运算符 (?:) 允许我们吧简单的if-else 逻辑嵌入单个表达式中  
+使用形式:
+	cond? expr1 : expr2;
+	//如果cond条件为真，调用expr1，否则调用expr2
+- 嵌套条件运算符
+
+- 条件运算符优先级较低，通常需要再两端添加括号
