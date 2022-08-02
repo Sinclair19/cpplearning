@@ -750,3 +750,37 @@ while (pbeeg != v.end() && *beg >= 0)
 
 - 移位运算符(又叫IO运算符)满足左结合律  
 优先级比算术运算符低，比关系运算符、赋值运算符和条件运算符优先级高
+
+## 4.9 sizeof 运算符
+返回一条表达式或一个类型名字所占的字节数  
+满足右结合律  
+所得值为 size_t 类型的的常量表达式  
+
+```cpp
+sizeof (type)
+sizeof expr
+```
+
+- 对 char 或者类型为 char 的表达式执行 sizeof 运算，结果得1
+- 对引用类型执行 sizeof 运算得到被引用对象所占空间的大小
+- 对指针执行 sizeof 运算得到指针本身所占空间的大小
+- 对解引用指针执行 sizeof 运算得到指针指向对象所占空间的大小，指针不需有效
+- 对数组执行 sizeof 运算得到整个数组所占空间的大小，等价于对数组中所有的元素各执行一次sizeof运算并将所得到的结果求和
+	- attention sizeof运算不会把数组转换成指针来处理
+- 对 string 对象或 vector 对象执行 sizeof 运算只会返回该类型固定部分的大小，不会计算对象中的元素占用了多少空间
+
+```cpp
+vector<int> ia;
+constexpr size_t sz = sizeof(ia)/sizeof(*ia);
+int arr2p[sz];
+```
+
+## 4.10 逗号运算符
+含有两个运算对象，按照从左向右的顺序依次求值，规定了运算对象求值的顺序
+
+```cpp
+vector<int>::size_type cnt = ivec.size();
+for(vector<int>::size_type ix =0; ix !=ivec.size(); ++ix, --cnt)
+	ivec[ix] = cnt;
+```
+
