@@ -826,3 +826,73 @@ for(vector<int>::size_type ix =0; ix !=ivec.size(); ++ix, --cnt)
 	`(expr) type;`
 
 
+# 5 语句
+
+## 5.1 简单语句
+C++ 语言中的大多数语句都以分号结束，表达式末尾加上分号就变成了表达式语句
+
+- 空语句
+	`;`
+- 复合语句(块)
+	将要执行的语句用花括号括起来
+
+## 5.2 语句作用域
+在 if、switch、while和for 语句的控制结构内定义变量，定义在控制结构当中的变量只在相应语句内部可见
+
+## 5.3 条件语句
+
+### 5.3.1 if 语句
+判断一个指定条件是否为真，根据判断结果决定是否执行另一条语句
+- 悬垂 else
+	C++规定 else 与离它最近的尚未匹配的 if 匹配，从而消除了程序的二义性
+- 使用花括号控制绝对路径
+
+### 5.3.2 switch 语句
+
+case 标签必须是整型常量表达式  
+任何连个 case 标签的值不能相同  
+default 也是一种特殊的 case 标签
+
+- switch 内部的控制流
+	- 如果某个 case 标签匹配成功，将从该标签开始向后顺序执行所有 case 分支，除非程序显式地中断了这一过程，否则知道 switch 的结尾处才会停下来
+- 漏写 break 容易引发缺陷
+- switch 内部的变量定义
+	不允许跨过变量的初始化语句直接跳转到该变量作用域内的一个位置
+
+## 5.4 迭代语句
+
+### 5.4.1 while 语句
+只要条件为真，while 语句就重复地执行循环体
+
+- 使用 while 循环
+
+### 5.4.2 传统的for语句
+```cpp
+for (init-statment;condition;expression)
+	statement
+```
+
+init-statement 必须为以下三种形式中的一种 声明语句，表达式语句或者空语句
+
+- for语句头中的多重定义
+	init-statement 可以定义多个对象，但是只能有一条声明语句，因此所有变量类型必须相同
+- 省略 for 语句头的某些部分
+	使用空语句
+
+### 5.4.3 范围 for 语句
+```cpp
+for (declaration : expression)
+	statement
+```
+expression 表示的必须是一个序列，要求拥有能返回迭代器的 begin 和 end 成员  
+
+### 5.4.4 do while 语句
+do while 语句先执行循环体后检查条件，不论条件如何，都至少执行一次循环
+
+```cpp
+do
+	statement
+	while (condition);
+```
+
+不允许在条件部分定义变量
