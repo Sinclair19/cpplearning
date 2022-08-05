@@ -896,3 +896,62 @@ do
 ```
 
 不允许在条件部分定义变量
+
+
+## 5.5 跳转语句
+
+### 5.5.1 break 语句
+break 语句只能出现在迭代语句或者 switch 语句内部(包括嵌套在此类循环里的语句或块的内部)
+作用范围为最近的循环或者 switch
+
+### 5.5.2 continue 语句
+终止最近的循环中的当前迭代并立即开始下一次迭代
+只能出现在 for、while和do while 循环内部，或者嵌套在此类循环里的语句或块的内部
+
+### 5.5.3 goto 语句
+
+从 goto 语句无条件跳转到同一函数内的令一条语句
+
+```cpp
+goto label;
+label: expression
+```
+标签标识符可以和程序中其他实体的标识符使用同一个名字而不会互相干扰  
+goto 语句和控制权转向的那条带标签的语句必须位于同一个函数之内
+
+## 5.6 try语句块和异常处理
+
+### 5.6.1 throw表达式
+
+包含关键字 throw 和紧随其后的一个表达式，其中表达式的类型就是抛出的异常类型
+
+### 5.6.2 try 语句块
+```cpp
+try{
+	program-statements
+} catch (exception-declaration){
+	handler-statements
+} catch (exception-declaration){
+	handler-statements
+}
+```
+try块后跟一个或多个 catch 子句，其中括号内为异常声明，之后为执行内容
+
+### 5.6.3 标准异常
+- exception 头文件
+- stdexcept 头文件
+	- 
+	|name|explanation|
+	|---|---|
+	|exception|常见问题|
+	|runtime_error|只有运行时才能检测出的问题|
+	|range_error|运行时错误，生成结果超出了有意义的值域范围|
+	|overflow_error|运行时错误，计算上溢|
+	|underflow_error|运行时错误，计算下溢|
+	|logic_error|程序逻辑错误|
+	|domain_error|逻辑错误，参数对应的结果不存在|
+	|invalid_argument|逻辑错误，无效参数|
+	|length_error|逻辑错误，试图创建一个超出该类型最大长度的对象|
+	|out_of_range|逻辑错误，使用一个超出有效范围的值|
+- new 头文件
+- type_info 头文件
