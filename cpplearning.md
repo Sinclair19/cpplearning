@@ -940,7 +940,6 @@ try块后跟一个或多个 catch 子句，其中括号内为异常声明，之�
 ### 5.6.3 标准异常
 - exception 头文件
 - stdexcept 头文件
-	- 
 	|name|explanation|
 	|---|---|
 	|exception|常见问题|
@@ -1010,8 +1009,13 @@ try块后跟一个或多个 catch 子句，其中括号内为异常声明，之�
 - 指针或引用形参与 const
 	常量引用也可以中字面值初始化
 - 尽量使用常量引用
+	非常量引用不能把 const 对象、字面值或者需要类型抓暖的对象传递给普通的引用形参
 
 ### 6.2.4 数组形参
+数组的两个特殊性质
+- 不允许拷贝数组 无法以值传递方式使用数组参数
+- 使用数组时通常会将其转换成指针
+
 ```cpp
 void print(const int*);
 void print(const int[]);
@@ -1045,3 +1049,62 @@ print(j);
 	```cpp
 	int *matrix[10] //10个指针构成的数组
 	int (*matrix)[10] //指向含有10个整数的数组的指针
+
+### 6.2.5 main: 处理命令行选项
+```cpp
+int main(int argc, char *argv[]){
+
+}
+```
+可选实参从argv[1]开始，argv[0]保存程序名字而非用户输入
+
+### 6.2.6 含有可变形参的函数
+- 所有实参类型相同
+	initializer_list 标准库类型
+- 实参类型不同，可变参数模板
+
+- initializer_list 形参  
+
+|name|explain|
+|---|---|
+|initializer_list\<T> lst;|默认初始化，T类型元素的空列表|
+|initializer_list\<T> lst{a,b,c}|lst元素数量和初始值一样多，lst元素是对应初始值的副本，列表中的元素是const|
+|lst2(lst)<br>lst2= lst|拷贝或赋值一个initializer_list对象不会拷贝列表中的元素；拷贝后，原始列表和副本共享元素|
+|lst.size()|列表中的元素数量|
+|lst.begin()|返回指向lst中首元素的指针|
+|lst.end()|返回指向lst中尾元素下一位的指针|
+
+- 省略符形参
+	通常只能出现在形参列表的最后一个位置
+
+## 6.3 返回类型和return语句
+
+### 6.3.1 无返回值的函数
+没有返回值的return语句只能用在返回类型是void的函数中，不要求一定要有return语句，会自动隐式执行return
+
+### 6.3.2 有返回值函数
+只要返回类型不是void，则该函数内的每条return语句必须返回一个值
+- 不要返回局部对象的引用或指针
+如果返回类型是常量引用，我们不能给调用的结果赋值
+- 列表初始化返回值
+
+- 主函数 main 的返回值
+编辑器隐式地插入了一条返回 0 的 return 语句
+
+main函数不能调用它自己
+
+### 6.3.3 返回数组指针
+通过返回数组的指针来达到返回数组
+- 声明一个返回数组指针的函数
+	`Type (*function(parameter_list))[dimension]`
+	数组的维度必须跟在函数的名字之后
+	eg:
+	`int (*func(int i))[10];`
+	- `func(int i)` 调用func函数时需要一个int类型的实参
+	- `(*func(int i))` 可以对函数调用的结果执行解引用操作
+	- `(*func(int i))[10]` 表示解引用func的调用将得到一个大小是10的数组
+	- `int (*func(int i))[10]` 表示数组中元素是int类型
+- 使用尾置返回类型
+	`auto func(int i) -> int(*)[10]`
+- 使用 decltype
+
