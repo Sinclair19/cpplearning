@@ -1227,3 +1227,31 @@ inline const string &shorterString(const string &s1, const string &s2){
 	`int (*f1(int))(int*,int)`
 	`auto f1(int) -> int (*)(int*, int)`
 - 将 auto 和 decltype 用于函数指针类型
+
+# 7 类
+
+## 7.1 定义抽象数据类型
+
+### 7.1.1 设计 Sales_data 类
+
+### 7.1.2 定义改进的 Sales_data 类
+成员函数的声明必须在类的内部，他的定义既可以在类的内部也可以在类的外部
+- 定义成员函数
+	`std::string isbn() const { return bookNo; }`
+- 引入 this
+	成员函数通过一个名为 this 的额外隐式参数来访问调用它的那个对象
+	- eg 调用 `total.isbn()` 时可以等价为 `Sales_data::isbn(&total)`
+	任何对类成员的直接访问都被看做this的隐式引用
+	`std::string isbn() cosnt {return this->bookNo;}`
+	this 的目的总是指向这个对象，为常量指针，不允许改变this中保存的地址
+- 引入 const 成员函数
+	修改隐式this指针的类型
+	使用 const 的成员函数被称作常量成员函数
+	常量对象、以及常量对象的引用或指针都只能调用常量成员函数
+- 类作用域和成员函数
+	成员函数体可以随便使用类中的其他成员而无需在意这些成员出现的次序
+- 在类的外部定义成员函数
+	成员函数的定义必须与它的声明匹配，返回类型，参数列表和函数名都得与类内部的声明保持一致
+	作用域运算符 `::`
+- 定义一个返回 this 对象的函数
+	当我们定义的函数类似于某个内置运算符时，应该令该函数的行为尽量模仿这个运算符
