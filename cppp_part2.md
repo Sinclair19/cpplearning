@@ -63,5 +63,56 @@ PART 2 C++标准库
 ```cpp
 cout<< unitbuf //所有输出操作都会立即刷新缓冲区
 cout << nounitebuf //回到正常的缓冲方法
-
+```
 - 关联输入和输出流
+
+## 8.2 文件输入输出
+`ifstream`从一个给定文件读取数据  
+`ofstream`向一个给定文件写入数据  
+`fstream`可以读写文件  
+
+`fstream` 特有操作
+|||
+|---|---|
+|fstream fstrm|创建一个未绑定的文件流|
+|fstream fstrm(s)|创建一个fstream，应打开名为s的文件|
+|fstream fstrm(s,mode)|指定mode打开文件|
+|fstrm.open(s)|打开名为s的文件，与fstrm绑定|
+|fstrm.close()|关闭与fstrm绑定的文件|
+|fstrm.is_open|返回一个bool值，指出与fstrm关联的文件是否成功打开且尚未关闭|
+
+### 8.2.1 使用文件流对象
+- 用 fstram 代替 iostream&
+- 成员函数 open 和 close
+定义一个空文件六对象，随后调用 open 将它与文件关联起来
+```cpp
+ifstream in(ifile);
+ofstream out;
+out.open(ifile + ",copy")
+```
+进行 open 是否成功的检测
+`if(out)`
+
+- 自动构造和析构
+当一个 fstream对象被销毁时，close 会自动调用
+
+### 8.2.2
+每个流都有一个关联的文件模式
+|||
+|---|---|
+|in|以读方式打开|
+|out|以写方式打开|
+|app|每次写操作前均定位到文件末尾|
+|ate|打开文件后立即定位到文件末尾|
+|trune|阶段文件|
+|binary|以二进制方式进行IO|
+
+- 以out模式打开文件会丢弃已有数据
+默认情况下，当我们打开一个 ofstream 时，文件的内容会被丢弃，阻止一个 ofstream 清空给定文件内容的方式是同时指定 app 模式
+```cpp
+ofstream app("file2", ofstream::app);
+ofstream app2("file2", ofstream::out | ofstram::app);
+```
+- 每次调用 open 时都会确定文件模式
+每次打开文件时，都要设置文件模式，可能是显式地设置，也可能是隐式地设置，当程序未指定模式时，就是用默认值
+
