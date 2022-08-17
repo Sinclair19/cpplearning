@@ -116,3 +116,37 @@ ofstream app2("file2", ofstream::out | ofstram::app);
 - 每次调用 open 时都会确定文件模式
 每次打开文件时，都要设置文件模式，可能是显式地设置，也可能是隐式地设置，当程序未指定模式时，就是用默认值
 
+
+## 8.3 string 流
+`istringstream` 从string对取数据  
+`ostringstream` 向string写入数据
+`stringstream` 既可从string读数据也可向string写数据  
+`stringstream` 特有地操作  
+|||
+|---|---|
+|sstream strm|strm是一个未绑定地stringstream对象，sstream是头文件sstream中定义地一个类型|
+|sstream strm(s)|strm是一个sstream对象，保存string s 地一个拷贝，此构造函数是explicit的|
+|strm.str()|返回strm所保存的string的拷贝|
+|strm.str(s)|将string s 拷贝到strm中，返回 void|
+
+### 8.3.1 使用 istringstream
+当某些工作是对整行文本进行处理，而其他一些工作是处理行内的单个单词时，通常可以使用 istringstream
+```cpp
+struct PersonInfo {
+    string name;
+    vector<string> phones;
+};
+string line, word;
+vector<PersonInfo> people;
+while (getline(cin,line)){
+    PersonInfo info;
+    istringstream record(line);
+    record >> info.name;
+    while (record >> word)
+        info.phones.push_back(word);
+    people.push_back(info);
+}
+```
+
+### 使用 ostringstream
+通过将内容写入到一个内存 ostringstream 中再统一进行输出
