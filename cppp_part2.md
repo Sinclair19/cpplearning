@@ -367,3 +367,18 @@ auto it4 = a.crbegin(); // list<string>::const_reverse_iterator
     调用 insert 后，需要递增迭代器两次(insert 在给定位置之前插入新元素，然后返回指向新元素的迭代器)
 - 不要保存 end 返回迭代器
     - 如果在一个循环中插入/删除 deque 、 string 或 vector 中的元素，不要缓存 end 返回的迭代器 
+
+## 9.4 vector 对象是如何增长的
+当不得不获取新的内存空间时，vector和 string的实现通常会分配比新的空间需求更大的内存空间  
+- 管理容量的成员函数
+    |||
+    |---|---|
+    |c.shrink_to_fit()|将 capacity()减少为与size()相同大小|
+    |c.capacity()|不重新分配内存空间的话，c 可以保存多少元素|
+    |c.reserve(n)|分配至少能容纳 n 个元素的内存空间|
+- reseve 并不改变容器中元素的数量，它仅影响预先分配多大的内存空间
+    调用 reserve 永远不会减少容器占用的内存空间
+- capacity 和 size
+    size 指它已经保存的元素的数目
+    capacity 则是在不分配新的内存空间的前提下它最多可以保存多少元素
+每个 vector 实现都可以选择自己的内存分配策略，但是必须遵守一条原则是，只有当迫不得已时才可以分配新的内存空间
