@@ -368,6 +368,7 @@ auto it4 = a.crbegin(); // list<string>::const_reverse_iterator
 - 不要保存 end 返回迭代器
     - 如果在一个循环中插入/删除 deque 、 string 或 vector 中的元素，不要缓存 end 返回的迭代器 
 
+
 ## 9.4 vector 对象是如何增长的
 当不得不获取新的内存空间时，vector和 string的实现通常会分配比新的空间需求更大的内存空间  
 - 管理容量的成员函数
@@ -382,3 +383,75 @@ auto it4 = a.crbegin(); // list<string>::const_reverse_iterator
     size 指它已经保存的元素的数目
     capacity 则是在不分配新的内存空间的前提下它最多可以保存多少元素
 每个 vector 实现都可以选择自己的内存分配策略，但是必须遵守一条原则是，只有当迫不得已时才可以分配新的内存空间
+
+
+## 9.5 额外的 string 操作
+
+### 9.5.1 构造 string 的其他方法
+|||
+|---|---|
+|string s(cp,n)|s 是 cp 指向的数组中前 n 个字符的拷贝。此数组至少应该包含 n 个字符|
+|string s(s2,pos2)|s 是 string s2 从下标 pos2 开始的字符的拷贝。若 pos2>s2.size()，构造函数的行为未定义|
+|string s(s2, pos2, len2)|s 是 string s2从下标pos2 开始 len2 个字符的拷贝。若pos2>s2.size()，构造函数的行为未定义。不管 len2 的值是多少，构造函数之多拷贝s2.size()-pos2个字符|
+
+通常当我们从一个 const char*创建 string 时，指针指向的数组必须以空字符结尾，拷贝操作遇到空字符时停止  
+如果传递给构造函数一个计数值，数组就不必以空字符结尾，如果我们未传递计数值且数组也未以空字符结尾，或者给定计数值大于数组大小，则构造函数的行为是未定义的  
+
+- substr 操作
+  - 返回一个 string，是原始string的一部分或全部的拷贝，可以传递给 substr 一个可选的开始位置和计数值
+
+### 9.5.2 改变 string 的其他方法
+除了接受迭代器的 insert 和 erase 版本外，string 还提供了接收下标的版本，下标指出了开始删除的位置，或是insert 到给定值之前的位置
+
+- append 和 replace 函数
+    - append 未在 string 末尾进行插入操作的一种简写形式
+        - 将字符追加到末尾，返回一个指向字符串的引用
+    - replace 是调用 erase 和 insert 的一种简写形式
+        - 删除一个范围内的字符，替换为另一个字符
+- 改变 string 的多重重载函数
+    - assign 和 append 函数无须指定删除元素范围的方式，可以通过一个位置和一个长度来指定位置，也可以通过一个迭代器范围来指定
+    - assign 总是替换 string 中的所有内容， append 总是将新字符追加到 string 末尾
+    - insert 函数允许我们用两种方式指定插入点: 用一个下标或一个迭代器，在两种情况下，新元素都会插入到指定下标之前的位置
+    - append 总是将新字符追加到 string 末尾
+
+### 9.5.3 string 搜索操作
+- 搜索成功，返回一个 `string::size_type` 值，表示匹配发生位置的下标  
+- 搜索失败, 则返回一个名为 `string::nops`的 static 成员
+    - 标准库将 nops 定义为一个 `const string::size_type` 类型，并初始化为 -1  
+
+|||
+|---|---|
+|`s.find(args)`|查找 s 中 args 第一次出现的位置|
+|`s.rfind(args)`|查找 s 中 args 最后一次出现的位置|
+|`s.find_first_of(args)`|在 s 中查找 args 中任何一个字符第一次出现的位置|
+|`s.find_last_of(args)`|在 s 中查找 args 中任何一个字符最后一次出现的位置|
+|`s.find_first_not_of(args)`|在 s 中查找第一个不在 args 中的字符|
+|`s.find_last_not_of(args)`|在 s 中查找最后一个不在 args 中的字符|
+
+`args` 必须为以下形式
+1. (`c,pos`) 从 s 中位置 pos 开始查找字符 c， 默认为0
+2. (`s2,pos`) 从 s 中位置 pos 开始查找字符串 s2, 默认未0
+3. (`cp,pos`) 从 s 中位置 pos 开始查找指针 cp 指向的以空字符串结尾的 C 风格字符串，默认为0
+4. (`cp,pos,n`) 从 s 中位置 pos 开始查找指针 cp 指向的数组的前 n 个字符，无默认值
+
+- 指定在哪里开始搜索
+- 逆向搜索
+    - `rfind`
+
+### 9.5.4 compare 函数
+根据 s 等于大于还是小于参数指定的字符串 返回 0 正数或负数
+1. (`s2`) 比较 s 和 s2
+2. (`pos1, n1, s2`) 将 s 中从 pos1 开始的 n1 个字符与 s2 进行比较
+3. (`pos1, n1, s2, pos2, n2`) 将 s 中从 pos1 开始的 n1 个字符与 s2 中从 pos2 开始的 n2 个字符进行比较
+4. (`cp`) 比较 s 与 cp 指向的以空字符串结尾的字符数组
+5. (`pos1, n1, cp`) 将 s 中从 pos1 开始的 n1 个字符与 cp 指向的以空字符结尾的字符数组进行比较
+6. (`pos1, n1, cp, n2`) 将 s 中从 pos1 开始的 n1 个字符与指针 cp 指向的地址开始的 n2 个字符进行比较
+
+### 9.5.5 数值转换
+```cpp
+int i = 42;
+string s = to_string(i);
+double d = stod(s);
+```
+如果 string 不能转换成某个数值 `invalid_argument`
+如果转换得出的数值无法用任何类型来表示 `out_of_range`
