@@ -455,3 +455,52 @@ double d = stod(s);
 ```
 如果 string 不能转换成某个数值 `invalid_argument`
 如果转换得出的数值无法用任何类型来表示 `out_of_range`
+
+<br>
+
+## 9.6 容器适配器
+- 顺序容器适配器
+  1. stack
+  2. qwueue
+  3. priority_queue  
+<br>
+
+- 容器适配器接受一种已有的容器类型，使其行为看起来像一种不同的类型  
+
+- 所有容器适配器都支持的操作和类型
+    |||
+    |---|---|
+    |`size_type`|一种类型，足以保存当前类型的最大对象的大小|
+    |`value_type`|元素类型|
+    |`container_type`|实现适配器的底层容器类型|
+    |`A a;`|创建一个名为 a 的空适配器|
+    |`A a(c)`|创建一个名为 a 的适配器，带有容器 c 的一个拷贝|
+    |关系运算符|返回底层容器的比较结果|
+    |`a.empty()`|若 a 包含任何元素，返回 false，否则返回 true|
+    |`a.size()`|返回 a 中的元素数目|
+    |`swap(a,b)`<br>`a.swap(b)`|交换 a 和 b 的内容， a 和 b 必须有相同类型，包括底层容器类型也必须相同|
+
+- 定义一个适配器
+    默认函数创建一个空对象，接受一个容器的构造函数拷贝该容器来初始化适配器
+    可以在创建一个适配器时将一个命名的顺序容器作为第二个类型参数，来重载默认容器类型
+    ```cpp
+    stack<string, vector<string>> str_stk; //在 vector 上实现的空栈
+    stack<string, vector<string>> str_stk2(svec); //str_stk2 在 vector 上实现，初始化时保存 svec 的拷贝
+    ```
+- 栈适配器
+    |||
+    |---|---|
+    |`s.pop()`|删除栈顶元素，但不返回该元素值|
+    |`s.push(item)`<br>`s.emplace(args)`|创建一个新元素压入栈顶，该元素通过拷贝或移动 item 而来，或者由 args 构造|
+    |`s.top()`|返回栈顶元素，但不将元素弹出栈|
+- 队列适配器
+    |||
+    |---|---|
+    |`q.pop()`|返回 queue 的首元素或 priority_queue 的最高优先级的元素，但不删除此元素|
+    |`q.front()`|返回首元素或尾元素，但不删除此元素|
+    |`q.back()`|只适用于 queue|
+    |`q.top`|返回最高优先级元素，但不删除该元素(只适用于 priority_queue)|
+    |`q.push(item)`|在 queue 末尾或 priority_queue 中恰当的位置创建一个元素|
+    |`q.emplace(args)`|其值为 item, 或者由 args 构造|
+
+    一种先进先出的存储和访问策略，进入队列的对象被放置到队尾，而离开队列的对象则从队首删除
