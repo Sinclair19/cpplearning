@@ -773,7 +773,7 @@ sizeof expr
 
 ```cpp
 vector<int> ia;
-constexpr size_t sz = sizeof(ia)/sizeof(*ia);
+constexpr size_t sz = sizeof(ia)/sizeof(*ia); //使用数组大小除以单个元素的大小得到数组中元素的个数
 int arr2p[sz];
 ```
 
