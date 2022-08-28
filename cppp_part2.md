@@ -581,3 +581,102 @@ double d = stod(s);
     - 标准库算法对迭代器而不是容器进行操作，因此算法不能直接添加或删除元素
 - 使用容器操作删除元素
     - erase
+
+## 10.3 定制操作
+
+### 10.3.1 向算法传递函数
+sort 重载版本接受第三个参数 -- 谓词
+
+- 谓词
+    - 一元 只接受单一参数
+    - 二元 接受两个参数
+
+```cpp
+// 比较函数
+bool isShorter(const string &s1, const string &s2){
+    return s1.size()<s2.size();
+}
+// 按照长度由长到短排序words
+sort(words.begin, words.end(), isShorter);
+```
+
+- 排序算法
+    - 为了保持相同长度的单词按字典序排列，可以使用 stable_sort 算法
+        ```cpp
+        elimDups(words); //将words按字典序重排，并消除重复单词
+        stable_sort(words.begin(), words.end(), isShorter);
+        ```
+
+### 10.3.2 lambda 表达式
+- find_if 
+    - 接受一对迭代器，表示一个范围
+    - 第三个参数为一个谓词，find_if 对输入序列中的每个元素调用给定的谓词，它返回第一个使谓词返回非0值的元素，如果不存在则返回尾迭代器
+
+- 介绍 lambda
+    - `[capture list](parameter list) -> return type {function body}`
+    
+    - 可以忽略参数列表和返回类型，但必须永远包含捕获列表和函数体
+    - 如果 lambda 的函数体包含任何单一 return 语句之外的内容，且未指定返回类型，则返回 void
+
+- 向 lambda 传递参数
+    - 调用一个 lambda 时给定的实参被用来初始化 lambda 的形参，一个 lambda 调用的实参数目永远与形参数目相等
+    
+    - `stable_sort(words.begin(), words.end(), [](const string &a, const string &b){return a.size() < b.size();};)`
+
+- 使用捕获列表
+    - lambda 以一堆 [] 开始，可以在其中提供一个以都后分割的名字列表
+    - 一个 lambda 只有在其捕获列表中捕获一个它所在函数中的局部变量，才能在函数体中使用该变量
+- 调用 find_if
+- for_each 算法
+    - 捕获列表只用于局部非 static 变量，lambda 可以直接使用局部 static 变量和它所在函数之外声明的名字
+- 完整的 biggies
+
+
+### 10.3.3 lambda 捕获和返回
+默认情况下，从 lambda 生成的类包含一个对应该 lambda 所捕获的变量的数据成员，类似任何普通类的数据成员，lambda 的数据成员也在 lambda 对象创建时被初始化
+
+- 值捕获
+    - 与参数不同，被捕获的变量的值是在 lambda 创建时拷贝，而不是调用时拷贝
+- 引用捕获
+    - 如果采用引用方式捕获一个变量，就必须确保被引用对象在 lambda 执行的时候是存在的
+- 隐式捕获
+    - 可以让编译器根据 lambda 体中的代码来推断我们要使用哪些变量，为了指示编译器推断捕获列表，应在捕获列表中写一个 & 或 = 。 
+        - & 告诉编译器采用捕获引用的方式
+        - = 表示采用值捕获方式
+    - 当我们混合使用隐式捕获和显式捕获时，捕获列表中的第一个元素必须是一个 & 或 =，此符号指定了默认捕获方式为引用或值
+    - 混合使用时，显式捕获的变量必须使用与隐式捕获不同的方式
+        1. []
+        2. [names]
+        3. [=]
+        4. [&]
+        5. [=, identifier_list]
+        6. [&, identifier_list]
+- 可变 lambda
+    - 默认情况下，对于一个值被拷贝的变量，lambda 不会改变其值，如果我们希望改变其值 就必须在参数列表首加上关键字 mutable
+- 指定 lambda 返回类型
+    - 默认情况下，如果一个 lambda 体包含 return 之外的任何语句，则编译器假定此 lambda 返回 void
+    - 函数 transform 接受三个迭代器和一个可调用对象，前两个迭代器表示输入序列，第三个迭代器表示目的位置，算法对输入序列中每个元素调用可调用对象，并将结果写到目的位置
+    - 当需要为一个 lambda 定义返回类型时，必须使用尾置返回类型
+        ```cpp
+        transform(vi.begin(), vi.end(), vi.begin(), [](int i) -> int {if (i<0) return -i; else return i;})
+        ```
+### 10.3.4 参数绑定
+- 标准库 bind 函数
+    - 定义在头文件 functional 中，可以将 bind 函数看作一个通用的函数适配器，接受一个可调用对象，生成一个新的可调用对象来适应原对象的参数列表
+    - `auto newCallable = bind(callable, arg_list)`
+- 绑定 check_size 的 sz 参数
+    ```cpp
+    auto wc = find_if(words.begin(), words.end(), [sz](const string &a));
+    // 可替换为
+    auto wc = find_if(words.begin(), words.end(), bind(check_size, _1, sz));
+    ```
+- 使用 placeholders 名字
+    - 名字 _n 定义在 placeholders 中，这个命名空间本身定义在 std 命名空间，为了使用这些名字，两个命名空间都要声明
+    -  `using std::placeholders::_1;`
+    -  `using namespace std::placeholders;`
+- bind 的参数
+    - 对于 `auto g = bind(f, a, b, _2, c, _1);` 调用 `g(_1,_2)` 将映射为 `f(a, b, _2, c, _1)`
+- 用 bind 重排参数顺序
+- 绑定引用参数
+    - 通过标准库 ref 函数
+    - ref 返回一个对象，包含给定的引用，此对象可以拷贝
