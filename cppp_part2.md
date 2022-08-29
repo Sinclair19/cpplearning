@@ -680,3 +680,58 @@ sort(words.begin, words.end(), isShorter);
 - 绑定引用参数
     - 通过标准库 ref 函数
     - ref 返回一个对象，包含给定的引用，此对象可以拷贝
+
+## 10.4 再探迭代器
+- 插入迭代器 被绑定到一个容器上，可用来向容器插入元素
+- 流迭代器 被绑定到输入或输出流上，可用来遍历所有关联的 IO 流
+- 反向迭代器 这些迭代器向后而不是向前移动，除了 forward_list 之外的标准库容器都有反向迭代器
+- 移动迭代器 不拷贝其中元素，而是移动它们
+
+### 10.4.1 插入迭代器
+接受一个容器，生成一个迭代器，能实现向给定容器添加元素，当我们通过一个插入迭代器进行赋值时，该迭代器调用容器操作向给定容器的指定位置插入一个元素
+- back_inserter 创建一个使用 push_back 的迭代器
+- front_inserter 创建一个使用 push_front 的迭代器 元素插入到第一个元素之前
+- inserter 创建一个使用 insert 的迭代器，此函数接受第二个参数，这个参数必须是一个指向给定容器的迭代器，元素将被插入到给定迭代器所表示的元素之前
+
+### 10.4.2 iostream 迭代器
+- istream_iterator 读取输入流
+    - 要读取的对象必须定义了输入运算符，可以将它绑定到一个流
+        ```cpp
+        istream_iterator<int> int_it(cin);
+        istream_iterator<int> eof;
+        while (in_iter != eof)
+            vec.push_back(*in_iter++);
+        //可重写为此形式
+        istream_iterator<int> in_iter(cin), eof;
+        vector<int> vec(in_iter, eof);
+        ```
+    - 可以进行的操作
+        |||
+        |---|---|
+        |`istream_iterator<T> in(is);`|in 从输入流 is 读取类型为 T 的值|
+        |`istream_iterator<T> end;`|读取类型为 T 的值的 istream_iterator 迭代器，表示尾后位置|
+        |in1 == in2 <br>in1 != in2|in1 和 in2 必须读取相同类型，如果它们都是尾后迭代器，或绑定到相同的输入，则两者相等|
+        |*in|返回从流中读取的值|
+        |in -> mem|与(*in).mem 的含义相同|
+        |++in, in++|使用元素类型定义的>>运算符从输入流中读取下一个值，与以往一样，前置版本返回一个指向递增后迭代器的引用，后置版本返回旧值|
+    - 使用算法操作流迭代器
+    - istream_iterator 允许使用懒惰求值
+
+- ostream_iterator 向一个流写数据
+    - 可执行的操作
+        |||
+        |---|---|
+        |`ostream_iterator<T> out(os);`|out 将类型为 T 的值写到输出流 os 中|
+        |`ostream_iterator<T> out(os,d);`|out 将类型为 T 的值写入到输出流 os 中，每个值后面都输出一个d，d指向一个空字符结尾的字符数组| 
+        |out = val|用 << 运算符将 val 写入到 out 所绑定的 ostream 中，val 的累型必须与 out 可写的类型兼容|
+        |*out, ++out, out++|这些运算符是存在的，但不对 out 做任何事情，每个运算符都返回 out|
+    - 使用流迭代器处理类类型
+        - 可以为任何定义了输入输出运算符的类型创建 istream_iterator, ostream_iterator
+
+### 10.4.3 反向迭代器
+对于一个反向迭代器，递增以及递减的含义会颠倒过来
+- 反向迭代器需要递减运算符
+- 反向迭代器和其他迭代器间的关系
+    - 通过调用 reverse_iterator 的 base 成员可以将反向迭代器换回一个普通迭代器
+        - 此过程反映了左闭右合的特性，使用 base 后反向迭代器会指向单纯反转的下一个字符 
+            ![反向迭代器和普通迭代器间的关系](./sources/10_4_3_1.png)
