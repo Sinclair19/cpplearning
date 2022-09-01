@@ -818,3 +818,36 @@ alg(beg, end, beg2, end2, other args);
         - (p, lst2, p2) 将 p2 指向的元素移动到 lst 中，或将 p2 之后的元素移动到 flst 中，lst2 可以是与 lst 或 flst 相同的链表
         - (p, lst2, b, e) b 和 e 必须表示 lst2 中的合法范围，将给定范围中的元素从 lst2 移动到 lst 或 flst，lst2 与 lst(flst) 可以是相同的链表，但 p 不能指定给定范围中元素
 - 链表特有的操作会改变容器
+
+
+# 11 关联容器
+关联容器支持高效的关键字查找和访问  
+- 两个主要的关键容器
+    - map
+        - 元素为一些关键字-值对 关键字起到索引的作用，值则表示与索引相关联的数据
+        - 定义在头文件 map 中
+    - set
+        - 每个元素只包含一个关键字
+        - 支持高效关键词查询操作
+        - 定义在头文件 set 中
+  
+# 11.1 使用关联容器
+map 类型通常被称为关联数组，关联数组与正常的数组类似，不同之处在于其下标不必是整数  
+set 是关键字的简单集合，当只是向知道一个值是否存在时，set 是最有用的
+- 使用 map
+    ```cpp
+    map<string, size_t> word_count;
+    string word;
+    while(cin >> word)
+        ++word_count[word];
+    for (const auto &w : word_count)
+        cout << w.first << "occurs" << w.second << ((w.second > 1) ? "times" : "time") << endl;
+    ```
+- 使用 set
+    ```cpp
+    map<string, size_t> word_count;
+    set<string> exclude = {"The", "But", "And"};
+    string word;
+    while(cin >> word)
+        if (exclude.find(word) == exclude.end())
+            ++word_count[word];
