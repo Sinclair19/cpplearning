@@ -892,3 +892,16 @@ pair 的默认构造函数对数据成员进行初始化
     |p1 == p2 <br> p1 != p2|当 first 和 second 成员分别相等，两个 pair相等|
 
 - 创建 pair 对象的函数
+
+
+## 11.3 关联容器操作
+|||
+|---|---|
+|key_type|此容器类型|
+|mapped_type|每个关键字关联的类型; 只适用于 map|
+|value_type|对于 set, 与 key_type 相同 <br> 对于 map, 为 pair<const key_type, mapped_type>|
+
+对于 set 类型，key_type 和 value_type 是一样的
+
+### 11.3.1 关联容器迭代器
+一个 map 的 value_type 是一个 pair，我们可以改变 pair 的值，但不能改变关键字成员的值，但不能改变关键字成员的值
