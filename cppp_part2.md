@@ -901,7 +901,55 @@ pair 的默认构造函数对数据成员进行初始化
 |mapped_type|每个关键字关联的类型; 只适用于 map|
 |value_type|对于 set, 与 key_type 相同 <br> 对于 map, 为 pair<const key_type, mapped_type>|
 
-对于 set 类型，key_type 和 value_type 是一样的
+对于 set 类型，key_type 和 value_type 是一样的  
+map 的元素是一个 pair 对象，包含一个关键字和一个关联的值  
+只有 map 类型 (unordered_map unorderred_multimap multimap map) 才定义了 mapped_type
 
 ### 11.3.1 关联容器迭代器
+当解引用一个关联容器迭代器时，会得到一个类型为容器的 value_type 的值的引用
 一个 map 的 value_type 是一个 pair，我们可以改变 pair 的值，但不能改变关键字成员的值，但不能改变关键字成员的值
+
+- set 的迭代器是 const 的
+- 遍历关联容器
+    - 当使用一个迭代器遍历 map multimap set 或 multiset 时，迭代器按关键字升序遍历元素
+- 关联容器和算法
+    - 通常不对关联容器使用泛型算法
+
+### 11.3.2 添加元素
+- 向 map 添加元素
+    - 可以在 insert 的参数列表中创建一个 pair
+        ```cpp
+        word_count.insert({word, 1});
+        word_count.insert(make_pair(word, 1));
+        word_count.insert(pair<string, size_t>(word, 1));
+        word_count.insert(map<string, size_t>::value_type(word, 1));
+        ```
+    - 关联容器 insert 操作
+        |||
+        |---|---|
+        |c.insert(v)<br>c.emplace(args)|v 是 value_type 类型的对象 args 用来构造一个元素|
+        |c.insert(b,e)<br>c.insert(il)|b 和 e 为迭代器，表示 value_type 的范围|
+        |c.insert(p,v)<br>c.emplace(p,args|迭代器 p 作为一个指示，指出从哪里开始搜索新元素应该存储的位置|
+    - 检测 insert 的返回值
+    - 展开递增语句
+        ++((ret.first)-> second);
+        - ret 保存 insert 返回的值，是一个pair
+        - ret.first 是 pair 的第一个成员，是一个 map 迭代器，指向具有给定关键词的元素
+        - ret.first -> 解引用此迭代器，提取map 中的元素，元素也是一个 pair
+        - ret.first -> second map 中元素的值的部分
+    - 向 multiset 或 multimap 添加元素
+
+### 11.3.3 删除元素
+1. c.erase(k) 从 c 中删除每个关键字为 k 的元素，返回一个 size_type 值，指出删除的元素的数量
+2. c.erase(p) 从 c 中删除迭代器 p 指定的元素，p 必须指向 c 中一个真实元素，不能等于 c.end()。 返回一个指向 p 之后元素的迭代器，若 p 指向 c 中的尾元素，则返回 c.end()
+3. c.erase(b,e) 删除迭代器对 b 和 e 所表示的范围的元素，返回 e
+
+
+### 11.3.4 map 的下标操作
+对一个 map 使用下标操作，其行为与数组或 vector 上的下标操作很不相同: 使用一个不在容器中的关键字作为下标，会添加一个具有此关键字的元素到 map 中
+1. c[k] 返回关键字为 k 的元素，如果 k 不在 c 中，添加一个关键字为 k 的元素，对其i女性值初始化
+2. c.at(k) 访问关键字为 k 的元素，带参数检查，若 k 不在 c 中，抛出一个 out_of_range 异常
+
+- 使用下标操作的返回值
+当对一个 map 进行下标操作时，会获得一个 mapped_type 对象
+当解引用一个 map 迭代器时，会得到一个 value_type 对象
