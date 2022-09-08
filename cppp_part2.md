@@ -1131,3 +1131,83 @@ lower_bound 和 upper_bound 不适用于无序容器
             p.reset(new string(*p));
         *p += newVal;
         ```
+
+### 12.1.4 智能指针和异常
+异常处理程序需要确保异常发生后资源能被正确的释放，可以使用智能指针
+- 智能指针和哑类
+    - 使用智能指针来确保内存或程序结束或异常时自动停止，释放内存
+- 使用我们自己的释放操作
+    - 定义一个函数来代替 delete，这个删除器函数必须能够完成对 shared_ptr 中保存的指针进行释放的操作
+    - 当创建一个 shared_ptr 时，可以传递一个(可选的)指向删除器函数的参数
+- 智能指针陷阱
+    - 不使用相同的内置指针值初始化(或reset)多个智能指针
+    - 不 delete get() 返回的指针
+    - 不适用 get() 初始化或 reset 另一个智能指针
+    - 如果你使用 get() 返回的指针，记住当最后一个对应的智能指针销毁后，你的指针就变为无效了
+    - 如果你使用智能指针管理的资源不是 new 分配的内存，记住传递给它一个删除器
+
+### 12.1.5 unique_ptr
+- 某个时刻只能有一个 unique_ptr 指向一个给定对象，当 unique_ptr 被销毁时，它所指向的对象也被销毁
+- 定义一个 unique_ptr 时，需要将其绑定到一个 new 返回的指针上
+-  unique_ptr 不支持普通的拷贝或赋值操作
+-  unique_ptr 操作
+    |||
+    |---|---|
+    |unique_ptr<T> u1<br>unique_ptr<T, D> u2|空 unique_ptr，可以指向类型为 T 的对象，ul 会使用 delete 来释放它的指针; u2 会使用一个类型为 D 的可调用对象来释放他的指针|
+    |unique_ptr<T,D> u(d)|空 unique_ptr，指向类型为 T 的对象，用类型为 D 的对象 d 代替 delete|
+    |u = nullptr|释放 u 指向的对象，将 u 置为空|
+    |u.release()|u 放弃对指针的控制权，返回指针，并将 u 置为空|
+    |u.reset()|释放 u 指向的对下给你|
+    |u.reset(q)<br>u.reset(nullptr)|如果提供了内置指针 q，令u指向这个对象；否则将 u 置为空|
+    - 可以通过调用 release 或 reset 将指针的所有权从一个 unique_ptr 转移给另一个 unique_ptr
+    - reset 成员接受一个可选的指针参数，将 unique_ptr 重新指向给定的指针
+- 传递 unique_ptr 参数和返回 unique_ptr
+    - 可以拷贝或赋值一个将要被销毁的 unique_ptr
+- 向 unique_ptr 传递删除器
+    - 可以重载一个 unique_ptr 中默认的删除器
+    - 在创建一或 reset 一个这种 unique_ptr 类型的对象时，必须提供一个指定类型的可调用对象
+    - `unique_ptr<objT, delT> p (new objT, fcn)`
+
+### 12.1.6 weak_ptr
+- weak_ptr 是一种不控制所指向对象生存期的智能指针，指向由一个 shared_ptr 管理的对象
+- 将一个 weak_ptr 绑定到一个 shared_ptr 不会改变 shared_ptr 的引用计数
+
+|||
+|---|---|
+|weak_ptr<T> w|空 weak_ptr 可以指向类型为 T 的对象|
+|weak_ptr<T> w(sp)|与 shared_ptr sp 指向相同对象的weak_ptr，T 必须能转换为 sp 指向的类型|
+|w = p|p 可以是一个 shared_ptr 或一个 weak_ptr。赋值后 w 与 p 共享对象|
+|w.reset()|将 w 置为空|
+|w.use_count()|与 w 共享对象的 shared_ptr 的数量|
+|w.expired()|若 w.use_count() 为 0，返回 true，否则返回 false|
+|w.lock|如果 expired 为 true，返回一个空 shared_ptr; 否则返回一个指向 w 的对象的 shared_ptr|
+
+- 当创建一个 weak_ptr 时，要用一个 shared_ptr 来初始化
+```cpp
+auto p = make_shared<int> (42);
+weak_ptr<int> wp(p);
+```
+- 因为对象可能不存在，蹦年直接访问对象，必须调用 lock
+    ```cpp
+    if (shared_ptr<int> np = wp.lock()){
+
+    }
+    ```
+    - 只有当 lock 调用然会 true 时才会进入 if 语句体
+
+- 核查指针类
+- 指针操作
+    - 定义名为 deref 和 incr的函数，分别用来解引用和递增 StrBlobPtr
+        ```cpp
+        std::string& StrBlobPtr::deref() const{
+            auto p = check(curr, "dereference past end");
+            return (*p)[curr];
+        }
+        ```
+        ```cpp
+        StrBlobPtr& StrBlobPtr::incr(){
+            check(curr, "increment past end of StrBlobPtr");
+            ++curr;
+            return *this;
+        }
+        ```
