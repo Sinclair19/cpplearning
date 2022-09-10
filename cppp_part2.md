@@ -1246,3 +1246,114 @@ int *p = new arrT;
         shared_ptr<int> sp(new int[10], [](int *p) {delete[] p;});
         sp.reset();
         ```
+
+### 12.2.2 allocator 类
+将内存分配和对象构造组合在一起可能会导致不必要的浪费
+- allocator 类
+    - 定义在 memory 中，帮助我们将内存分配和对象构造分离开来
+    - 分配的内存是原始的，未构造的
+        1. `allocator<T> a` 定义了一个名为 a 的 allocator 对象，可以为类型为 T 的对象分配内存
+        2. `a.allocate(n)` 分配一段原始的，未构造的内存，保存 n 个类型为 T 的对象
+        3. `a.deallocate(p, n)` 释放从 T* 指针 p 中地址开始的内存，这块内存保存了 n 个类型为 T 的对象; p 必须是一个先前由 allocate 返回的指针，且 n 必须是 p 创建时所要求的大小。在调用 deallocate 之前，用户必须对每个在这块内存中创建的对象调用 destroy
+        4. `a.construct(p, args)` p 必须是一个类型为 T* 的指针，指向一块原始内存; arg 被传递给类型为 T 的构造函数, 用来在 p 指向的内存中构造一个对象
+        5. `a.destroy(p)` p 为 T* 类型的指针，此算法对 p 指向的对象执行析构函数
+- allocator 分配未构造的内存
+    - construct 成员函数接受一个和零个或多个额外参数，
+    - 为了使用 allocate 返回的内存，必须用 construct 构造对象，使用未构造的内存，其行为是未定义的
+    - 当我们用完对象后，必须对每个构造的而元素调用 destroy 来销毁他们，函数 destroy 接受一个指针，对指向的对象执行析构函数
+    - 只能对真正构造了的函数进行 destroy 操作
+    - 一旦元素被销毁后，就可以重新使用这部分内存来保存其他 string，也可以将其归还给系统，释放内存通过调用 deallocate 来完成
+- 拷贝和填充未初始化内存的算法
+    - 标准库为 allocator 类定义了两个伴随算法，可以在未初始化内存中创建对象
+        1. `uninitialized_copy(b, e, b2)` 从迭代器 b 和 e 指出的舒服范围中拷贝元素到迭代器 b2 指定的 未构造原始内存中。 b2 指向的内存必须足够大，能容纳输入序列中元素的拷贝
+        2. `uninitialized_copy_n(b, n, b2)` 从迭代器 b 指向的元素开始，拷贝 n 个元素到 b2 开始的内存中
+        3. `uninitialized_fill(b, e, t)` 从迭代器 b 和 e 指定的原始内存范围中创建对象，对象的值均为 t 的拷贝
+        4. `uninitialized_fill_n(b, n, t)` 从迭代器 b 指向的内存地址开始创建 n 个对象。 b 必须只想足够大的未构造的原始内存，能容纳给定数量的对象
+
+## 12.3 使用标准库：文本查询程序
+
+### 12.3.1 文本查询程序设计
+- 数据结构
+- 在类之间共享数据
+- 使用 TextQuery 类
+```cpp
+void runQueries(ifstream &infile){
+    TextQuery tq(infile);
+    while(true){
+        cout << "enter word to look for, or q to quit:";
+        string s;
+        if(!(cin >> s) || s == "q")
+            berek;
+        print(cout, tq.query(s)) << endl;
+    }
+}
+```
+
+### 12.3.2 文本查询程序类的定义
+```cpp
+class QueryResult;
+class TextQuery{
+    public:
+        using line_no = std::vector<std::string>::size_type;
+        TextQuery(std::ifstream&);
+        QueryResult query(const std::string&) const;
+    private:
+        std::shared_ptr<std::vector<std::string>> file;
+        std::map<string, std::shared_ptr<std::set<line_no>>> wm;
+};
+```
+
+- TextQuery 构造函数
+    接受一个 ifstream，逐行读取输入文件
+```cpp
+TextQuery::TextQuery(ifstream &is): file(new vector<string>){
+    string text;
+    while(getline(is, text)){
+        file -> push_back(text);
+        int n = file->size() -1;
+        istringstream line(text);
+        string word;
+        while(line>>word){
+            auto &lines = vm[word];
+            if(!lines)
+                lines.reset(new set<line_no>);
+            lines -> insert(n);
+        }
+    }
+}
+```
+- QueryResult 类
+```cpp
+class QueryResult{
+    friend std::ostream& print(std::ostream&, const QueryResult&);
+    public:
+    QueryResult(std::string s, std::shared_ptr<std::set<line_no>> p, std::shared_ptr<std::vector<std::string>> f):
+        sought(s), lines(p), file(f){ }
+    private:
+        std::string sought;
+        std::shared_ptr<std::set<line_no>> lines;
+        std::shared_ptr<std::vector<std::string>> file;
+};
+```
+
+- query 函数
+```cpp
+QueryResult
+TextQuery::query(const string &sought) const{
+    static shared_ptr<set<line_no>> nodata(new set<line_no>);
+    auto loc = wm.find(sought);
+    if(loc == wm.end())
+        return QueryResult(sought, nodata, file);
+    else
+        return QueryResult(sought, loc -> second, file);
+}
+
+- 打印结果
+```cpp
+ostream &print(ostream & os, const QueryResult &qr){
+    os << qr.sought << "occurs" << qr.lines->size() << " " << make_plural(qr.lines->size(), "time", "s" ) << endl;
+    for(auto num: *qr.lines)
+        os << "\t(line" << num + 1 << ")" << *(qr.file->begin() + num) << endl;
+    return os;
+}
+```
