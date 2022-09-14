@@ -131,3 +131,74 @@ class HsaPtr {
     - 如果将一个对象赋予它自身，赋值运算符必须能正确工作
     - 大多数赋值运算符组合了析构函数和拷贝构造函数的工作
 对于一个赋值运算符来说，正确工作是非常重要的，即使是将一个对象赋予它自身，也要能正确工作，一个好的方法是在销毁左侧运算对象资源之前拷贝右侧运算对象
+
+### 13.2.2 定义行为像指针的类
+对于行为类似指针的类，我们需要为其定义拷贝构造函数和拷贝赋值运算符，来拷贝指针成员本身而不是它指向的 string  
+希望直接管理资源时使用引用计数
+- 引用计数
+    - 除了初始化对象外，每个构造函数(拷贝构造函数除外)还要创建一个引用计数，用来记录有多少对象与正在创建的对象共享状态，当我们创建一个对象时，只有一个对象共享状态，因此将计数器初始化为1
+    - 拷贝构造函数不分配新的计数器，而是拷贝给定对象的数据成员，包括计数器。拷贝构造函数递增共享的计数器，指出共享状态的用户少了一个，如果计数器变为0，则析构函数释放状态
+    - 析构函数递减计数器，指出共享状态的用户少了一个，如果计数器变为0，则析构函数释放状态
+    - 拷贝赋值运算符递增右侧运算对象的计数器，递减左侧运算对下国内的计数器，如果左侧运算对象的计数器变为0，意味着他的共享状态没有用户了，拷贝赋值运算符就必须销毁状态
+    - 将引用计数器保存在动态内存中，当创建一个对象时，我们也分配一个新的计数器，当拷贝或赋值对象时，我们拷贝指向计数器的指针，使用这种方法，副本和原对象都会指向相同的计数器
+- 定义一个使用引用计数的类
+    ```cpp
+    class HasPtr{
+        public:
+            HasPtr(const std::string &s = std::string()): 
+                ps(new std::string(s)), i(0), use(new std::size_t(1)) {}
+            HasPtr(const HasPtr &p):
+                ps(p.ps), i(p.i), use(p.use) { ++*use;}
+            HasPtr& operator=(const HstPtr&);
+            ~HasPtr();
+        private:
+            std::string *ps;
+            int i;
+            std::size_t *use;
+    };
+    ```
+- 类指针的拷贝成员"篡改"引用计数
+    - 析构函数应该递减引用函数，指出共享 string 的对象少了一个，如果计数器变为0，则析构函数释放 ps 和 use 指向的内存
+    - 处理自赋值问题
+        ```cpp
+        HasPtr& HasPtr::operator=(const HasPtr &rhs){
+            ++*rhs.use;
+            if (--*use == 0){
+                delete ps;
+                delete use;
+            }
+            ps = rhs.ps;
+            i = rhs.i;
+            use = rhs.use;
+            return *this;
+        }
+        ```
+
+## 13.3 交换操作
+除了定义拷贝控制成员，管理资源的类通常还定义一个名为 swap 的函数，对于与重排元素顺序的算法一起使用的类，会在交换两个原不俗时调用 swap  
+如果一个类自定义了自己的 swap ，那么算法将使用类自定义版本
+- 编写我们自己的 swap 函数
+    ```cpp
+    class HasPtr {
+        friend void swap(HasPtr&, HasPtr&);
+    };
+    inline
+    void swap(HasPtr &lhs, HsaPtr &rhs){
+        using std::swap;
+        swap(lhs.ps, rhs.ps);
+        swap(lhs.i, rhs.i);
+    }
+    - 与拷贝控制成员不同，swap 并不是必要的，但是对于分配了资源的类，定义 swap 可能是一种很重要的优化手段
+- swap 函数应该调用 swap，而不是 std::swap
+- 在赋值运算符中使用 swap
+    - 定义 swap 的类通常用 swap 来定义它们的赋值运算符，使用了一种名为拷贝并交换的计数
+    ```cpp
+    // rhs 按照值传递，意味着 HasPtr 的拷贝构造函数
+    // 将右侧运算对象中的 string 拷贝到 rhs
+    HasPtr& HasPtr::operator=(HasPtr rhs){
+        // 交换左侧运算对象和局部变量rhs 的内容
+        swap(*this,rhs); // rhs 现在指向本对象曾经使用的内存
+        return *this; // rhs 被销毁，从而 delete 了 rhs 中的指针
+    }
+    ```
+    - 使用拷贝和交换的赋值运算符自动就是异常安全的，且能正确处理自赋值
