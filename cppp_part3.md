@@ -202,3 +202,38 @@ class HsaPtr {
     }
     ```
     - 使用拷贝和交换的赋值运算符自动就是异常安全的，且能正确处理自赋值
+
+## 13.4 拷贝控制实例
+拷贝赋值运算符通常执行拷贝构造函数和析构函数中也要做的工作，这种情况下，公共的工作应该放在 private 的工具函数中完成
+- message 类
+- save 和 remove 成员
+- message 类的拷贝控制成员
+- message 的析构函数
+- message 的拷贝赋值运算符
+- message 的 swap 函数
+
+## 13.5 动态内存管理类
+某些类需要在运行时分配可变大小的内存空间，这种类通常可以使用标准库容器来保存他们的数据
+- StrVec 类的设计
+    - 每个 StrVec 有三个指针成员指向其元素所使用的内存
+        - elements 指向分配的内存中的首元素
+        - first_free 指向最后一个实际元素之后的位置
+        - cap 指向分配的内存末尾之后的位置
+    - alloc 静态成员 四个工具函数
+        - alloc_n_copy 分配内存拷贝一个给定范围中的元素
+        - free 销毁构造的元素并释放内存
+        - chk_n_alloc 保证 StrVec 至少有容纳一个新元素的空间，如果没有添加新元素， chk_n_alloc 会调用 reallocate 来分配更多内存
+        - reallocate 在内存用完时为 StrVec 分配新内存
+- StrVec 类定义
+- 使用 construct
+    - 使用 allocator 分配内存时，内存是未构造的
+- alloc_n_copy 成员
+- free 成员
+- 拷贝控制成员
+- 在重新分配内存的过程中移动而不是拷贝元素
+    - 拷贝后如果每个 string 只有唯一的用户，即可避免拷贝元素
+- 移动构造函数和 std::move
+    - 一些标准库定义了移动构造函数
+    - move 标准库函数
+        - 定义在 utility 头文件中
+- reallocate 成员
