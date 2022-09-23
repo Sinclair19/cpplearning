@@ -472,3 +472,30 @@ noexcept 通知标准库我们的构造函数不抛出任何一场
 因此在默认情况下，由 lambda 产生的类当中的调用运算符是一个 const 成员函数  
 用这个类替代 lambda 表达式后，我们可以重写并重新调用 stable_sort
 - 表示 lambda 及相应捕获行为的类
+    - lambda 表达式产生的类不含默认构造函数、赋值运算符和默认析构函数；是否含有默认的拷贝/移动构造函数则通常要视捕获的数据成员类型而定
+
+### 14.8.2 标准库定义的函数对象
+functional 头文件
+||||
+|---|---|---|
+|**算数**|**关系**|**逻辑**|
+|plus<Type>|equal_to<Type>|logical_and<Type>|
+|minus<Type>|not_equal_to<Type>|logical<Type>|
+|multiplies<Type>|greater<Type>|logical<Type>|
+|divides<Type>|greater_equal<Type>||
+|modulus<Type>|less<Type>||
+|negate<Type>|less_equal<Type>||
+
+- 在算法中使用标准库函数对象
+    - 表示运算符的函数对象类常用来替换算法中的运算符
+    - greater 类型的对象将产生一个调用运算符并负责执行待排序类型的大于运算
+    - 也可以作用于指针
+
+### 14.8.3 可调用对象于 function
+函数、函数指针、lambda 表达式、bind 创建的对象以及重载了函数调用运算符  
+两个不同类型的可调用对象却可能共享同一种调用形式  
+调用形式指明了返回的类型
+- 不同类型可能具有相同的调用形式
+    - 定义一个函数表用于存储指向这些可调用对象的指针，当程序需要执行某个特定的操作时从表中查找该调用函数
+- 标准库 function 操作
+    1. function<T> f;
