@@ -498,4 +498,18 @@ functional 头文件
 - 不同类型可能具有相同的调用形式
     - 定义一个函数表用于存储指向这些可调用对象的指针，当程序需要执行某个特定的操作时从表中查找该调用函数
 - 标准库 function 操作
-    1. function<T> f;
+    1. function<T> f;  f是一个用来存储可调用对象的空 function ，这些可调用对象的调用形式应该与函数类型 T 相同
+    2. function<T> f(nullptr); 显式地构造一个空 function
+    3. function<T> f(obj); 在 f 中存储可调用对象 obj 地副本
+    4. f 将 f 作为条件: 当 f 含有一个可调用对象时为真；否则为假
+    5. f(args) 调用 f 中对象，参数是 args
+- 定义为 function<T> 的成员的类型
+    1. result_type 该 function 类型的可调用对象返回的类型
+    2. argument_type 
+        first_argument_type 
+        second_argumnet_type
+        当 T 由一个或连个实参时定义的类型，如果 T 只有一个实参，则 argument_type 是该类型的同义词: 如果 T 有两个实参，则 first_argument_type 和 second_argument_type 分别代表两个实参的类型
+- 调用形式  `function<int(int, int)>`
+- 重载的函数与 function
+    - 不能直接将重载函数的名字存入 function 类型的对象中
+    - 通过存储函数指针而非函数名字 或使用 lambda 消除二义性
