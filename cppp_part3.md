@@ -823,3 +823,37 @@ derived 是派生类的名字， base 是基类的名字， parms 是构造函�
     - 当一个基类构造函数含有默认实参时，这些实参并不会被继承
     - 派生类将获得多个继承的构造函数，其中每个构造函数分别省略掉一个含有默认实参的形参
     - 如果派生类定义的构造函数与基类的构造函数具有相同的参数列表，则该构造函数将不会被继承，定义在派生类中的构造函数将替换继承而来的构造函数
+
+## 15.8 容器与继承
+当我们使用容器存放继承体系中的对象时，通常必须采取间接存储的方式，因为不允许在容器中保存不同类型的元素，不能把具有继承关系的多种类型的对象直接存放在容器中  
+当派生类对象被赋值给基类对象时，其中的派生类部分将被切掉，因此容器和存在继承关系的类型无法兼容  
+- 在容器中放置智能指针而非对象
+    - 但我们希望在容器中存放具有继承关系的对象时，我们实际上存放的通常是基类的指针（更好的选择是智能指针）
+
+### 15.8.1 编写 Basket 类
+定义一个 compare 的私有静态成员，该成员负责比较 shared_ptr 所指的对象的 isbn
+```cpp
+std::multiset<std::shared_ptr<Quote>, decltype(compare)*> items{compare};
+```
+- 定义 Basket 的成员
+    - 在类的内部定义的 add_item 成员，接受一个指向动态分配的 Quote 的 shared_ptr 然后将这个 shared_ptr 放置在 multiset 中
+    - 第二个成员的名字是 total_receipt，它负责将购物篮的内容逐项打印成清单
+- 隐藏指针
+    - Basket 的用户仍然必须处理动态内存
+        ```cpp
+        void add_item(const Quote& sale); //拷贝给定的对象
+        void add_item(Quote&& sale); //移动给定的对象
+        ```
+- 模拟虚拷贝
+    - 为了解决上述问题，给 Quote 类添加一个虚函数，该函数将申请一份当前对象的拷贝
+        ```cpp
+        class Quote {
+        public:
+            virtual Quote* clone() cosnt & {return new Quote(*this);}
+            virtual Quote* clone() && {return new Quote(std::move(*this));}
+        };
+        class Bulk_quote : public Quote {
+            Bulk_quote* clone() const & {return new Bulk_quote(*this);}
+            Bulk_quote* clone() && {return new Bulk_quote(std::move(*this));}
+        };
+        ```
