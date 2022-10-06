@@ -857,3 +857,59 @@ std::multiset<std::shared_ptr<Quote>, decltype(compare)*> items{compare};
             Bulk_quote* clone() && {return new Bulk_quote(std::move(*this));}
         };
         ```
+
+## 15.9 文本查询程序再探
+- 支持如下查询形式
+    - 单词查询，用于得到匹配狗哥给定 string 的所有行
+    - 逻辑非查询，使用~运算符得到不匹配查询条件的所有行
+    - 逻辑或查询，使用 | 运算符返回匹配两个条件中任意一个的行
+    - 逻辑与查询，使用 & 运算符返回匹配全部两个条件的行
+
+### 15.9.1 面向对象的解决方案
+应将几种不同的查询建模成相互独立的类，这些类共享一个公共基类
+每个类包含两个操作
+1. eval，接受一个 TextQuery 对象并返回一个 QueryResult，eval 函数使用给定的 TextQuery 对象查找与之匹配的行
+2. rep, 返回基础查询的 string 表示形式，eval 函数使用 rep 创建一个表示匹配结果的 QueryResult，输出运算符使用 rep 打印查询表达式
+
+- 抽象基类
+    - 将 eval 和 rep 定位为纯虚数，其他代表某种特定查询类型的类必须覆盖这两个函数
+- 将层次结构隐藏于接口类中
+    - 定义 Query 对象的三个重载运算符以及一个接受 string 参数的 Query 构造函数，这些函数动态分配一个新的 Query_base 派生类的对象
+- 理解这些类的工作机理
+  
+### 15.9.2 Query_base 类和 Query 类
+- Query_base 类
+    - 抽象基类
+    ```cpp
+    class Query_base {
+        friend class Query;
+    protected:
+        using line_no = TextQuery::line_no;
+        virtual ~Query_base () = default;
+    private:
+        virtual QueryResult eval(const TextQuery&) const = 0;
+        virtual std::string rep() cosnt = 0;
+    };
+    ```
+- Query 类
+    - 对外提供接口，同时隐藏 Query_base 的继承体系，每个 Query 对象都含有一个指向 Query_base 对象的 shared_ptr
+    ```cpp
+    class Query {
+        friend Query operator~(const Query &);
+        friend Query operator|(const Query&, const Query&);
+        friend Query operator&(const Query&, const Query&);
+    public:
+        Query(const std::string&);
+        QueryResult eval(const TextQuery &t) const { return q->eval(t);}
+        std::string rep() cosnt { return q->rep();}
+    private:
+        Query(std::shared_ptr<Query_base> query) : q(query) {}
+        std::shared_ptr<Query_base> q;
+    };
+    ```
+- Query 的输出运算符
+    ```cpp
+    std::ostream & opeator<<(std::osteam &os, const Query &query){
+        return os << query.rep();
+    }
+    ```
