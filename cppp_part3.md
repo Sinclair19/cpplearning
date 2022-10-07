@@ -913,3 +913,102 @@ std::multiset<std::shared_ptr<Quote>, decltype(compare)*> items{compare};
         return os << query.rep();
     }
     ```
+
+### 15.9.3 派生类
+- WordQuery 类
+    - 一个 WordQuery 查找一个给定的 string，是在给定的 TextQuery 对象上实际执行查询的唯一一个操作
+    ```cpp
+    class WordQuery: public Query_base {
+        friend class Query;
+        WordQuery(const std::string &s): query_word(s) {}
+        QueryResult eval(const TextQuery &t) const { return t.query(query_word);}
+        std::string rep() cosnt {return query_word; }
+        std::string query_word;
+    };
+    inline
+    Query::Query(const std::string &s): q(new WordQuery(s)) {}
+    ```
+- NotQuery 类及 ~ 运算符
+    - ~ 运算符生成一个 NotQuery，其中保存着一个需要对其取反的 Query
+    ```cpp
+    class NotQuery: public Query_base {
+        friend Query operator~(const Query &);
+        NotQuery(const Query &q): query(q) {}
+        std::string rep() const {return "~(" + query.rep() + ")"}
+        QueryResult eval(cosnt TextQuery&) cosnt;
+        Query query;
+    };
+    inline Query operator~(const Query &operand){
+        return std::shared_ptr<Query_base>(new NotQuery(operand));
+    }
+    ```
+- BinaryQuery 类
+    ```cpp
+    class BinarQuery: public Query_base {
+        BinaryQuery(const Query &l, const Query &r, std::string s):
+            lhs(l), rhs(r), opSym(s) {}
+        std::string rep() const { return "(" + lhs.rep() + " " + opSym + " " + rhs.rep() + ")"}
+        Query lsh, rhs;
+        std::string opSym;
+    };
+    ```
+- AndQuery 类、OrQuery 类及相应的运算符
+    ```cpp
+    class AndQuery: public BinaryQuery {
+        friend Query operator&(cosnt Query&, const Query&);
+        AndQuery(const Query &left, const Query &right): BinaryQuery(left, right, "&") {}
+        QueryResult eval(const TextQuery&) const;
+    };
+    inline Query operator&(const Query &lhs, const Query &rhs){
+        return std::shared_ptr<Query_base>(new AndQuery(lhs, rhs));
+    }
+    class OrQuery: public BinaryQuery {
+        friend Query operator|(const Query&, const Query&);
+        OrQuery(cosnt Query &left, const Query &right): BinaryQuery(left, right, "|") {}
+        QueryResult eval(const TextQuery&) const;
+    };
+    inline Query operator|(cosnt Query &lhs, const Query &rhs){
+        return std::shared_ptr<Query_base>(new OrQuery(lhs, rhs));
+    }
+    ```
+### 15.9.4 eval 函数
+- OrQuery::eval
+    ```cpp
+    QueryResult
+    OrQuery::eval(const TextQuery& text) const{
+        auto right = rhs.eval(text), left = lhs.eval(text);
+        auto ret_lines = make_shared<set<line_no>>(left.bergin(), left.end());
+        ret_lines->insert(right.begin(), right.end());
+        return QueryResult(rep(), ret_lines, left.get_file());
+    }
+    ```
+- AndQuery::eval
+    ```cpp
+    QueryResult
+    AndQuery::eval(cosnt TextQuery& text) const{
+        auto left = lhs.eval(text), right = rhs.eval(text);
+        auto ret_lines = make_shared<set<line_no>>();
+        set_intersection(left.begin(), left.end(), right.begin(), right.end(), inserter(*ret_lines, ret_lines->begin()));
+        return QueryResult(rep(), ret_lines, left.get_file());
+    }
+    ```
+    - set_intersection
+        - 标准库算法
+        - 接受五个迭代器，使用前四个迭代器表示两个输入序列，最后一个实参表示目的位置
+        - 该算法将两个输入序列中共同出现的元素写入到目的位置
+- NotQuery::eval
+    ```cpp
+    QueryResult
+    NotQuery::eval(cosnt TextQuery& text) const{
+        auto result = query.eval(text);
+        auto ret_lines = make_shared<set<line_no>>();
+        auto beg = result.begin(), end = result.end();
+        auto sz = result.get_file()->size();
+        for (size_t n = 0; n != sz; ++n){
+            if (beg == end || *beg != n)
+                ret_lines->insert(n);
+            else if (beg != end)
+                ++beg;
+        }
+        return QueryResult (rep(), ret_lines, result.get_file());
+    }
