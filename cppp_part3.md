@@ -1142,3 +1142,31 @@ int compare(const T &v1, const T &v2){
                 friend class Pal3;
             };
             ```
+        - 令模板自己的类型参数称为友元
+            - 可以将模板类型参数声明为友元
+                ```cpp
+                template <typename Type> class Bar{
+                friend type;
+                };
+                ```
+- 模板类型别名
+    - 类模板的一个实例定义了一个类类型与任何其他类类型一样，可以定义一个typedef 来引用实例化的类
+        - `typedef Blob<string> StrBlob;`
+    - C++ 11 允许为类模板定义一个类型别名
+        ```cpp
+        template<typename T> using twin = pair<T,T>;
+        twin<string> authors; //authors 是一个 pair <string, string> 
+        twin<int> win_loss // pair<int, int>
+        ```
+- 类模板的 static 成员
+    - 类模板声明 static 成员
+        ```cpp
+        template <typename T> class Foo {
+        public:
+            static std::size_t count() {return ctr;}
+        private:
+            static std::size_t ctr
+        };
+        ```
+    - 模板类的每个 static 数据成员必须有且仅有一个定义
+    - 一个 static 成员函数只有在使用时才会实例化
