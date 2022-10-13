@@ -1210,3 +1210,63 @@ int compare(const T &v1, const T &v2){
     - 无论何时使用一个类模板都必须在模板名之后接上尖括号
     - 尖括号指出类必须从一个模板实例化而来
     - 如果一个类模板为其所有模板参数都提供了默认实参，且希望使用这些默认实参，就必须在模板名之后跟一个空尖括号对
+
+### 16.1.4 成员模板
+一个类可以包含本身是模板的成员函数，这种成员被称为成员模板，成员模板不能是虚函数
+- 普通非模板类的成员模板
+    ```cpp
+    class DebugDelete {
+    public:
+        DebugDelete(std::ostream &s = std::cerr) : os(s) {}
+        template <typename T> void operator() (T *p) const{
+            os << "deleting unique_ptr" << std::endl;
+            delete p;
+        }
+    private:
+        std::ostream &os;
+    }
+    ```
+- 类模板的成员函数
+    - 可以定义成员模板
+        ```cpp
+        template <typename T> class Blob {
+            template <typename It> Blob(It b, It e);
+        };
+        ```
+    - 成员函数是函数模板，当我们在类模板外定义一个成员模板时，必须同时为类模板和成员换模板提供参数列表
+    - 类模板的参数列表在前，后跟成员自己的模板参数列表
+        ```cpp
+        template <typename T>
+        template <typename It> 
+            Blob<T>::Blob(It b, It e): data(std::make_shared<std::vector<T>>(b,e)) {}
+        ```
+    - 实例化与成员模板
+        - 为了实例化一个类模板的成员模板，我们必须同时提供类和函数模板的实参
+
+### 16.1.5 控制实例化
+当模板被使用时才会进行实例化，相同的实例可能出现在多个对象文件中，当两个或多个独立编译的源文件使用了相同的模板，并提供了相同的模板参数时，每个文件中就都会有改模板的一个实例  
+可以通过显式实例化来避免这种开销
+```cpp
+extern template declaration; //实例化声明
+template declaration; // 实例化定义
+```
+将一个实例化声明为 extern 就表示承诺在程序其他位置有该实例化的一个非 extern 声明  
+对于一个给定的实例化版本，可能有多个 extern 声明，但必须只有一个定义  
+extern 声明必须出现在任何使用此实例化版本的代码之前  
+对每个实例化声明，在程序中某个位置必须有其显式的实例化定义
+- 实例化定义会实例化所有成员
+    - 一个类模板的实例化会定义会实例化该模板的所有成员，包括内联的成员函数
+    - 在一个类模板的实例化定义中，所用类型必须能用于模板的所有成员函数
+
+### 16.1.6 效率与灵活性
+- 运行时绑定删除器
+    - 删除器必须保存为一个指针或一个封装了指针的类
+    - 在一个 shared_ptr 的生存周期中，我们可以随时改变其删除器的类型
+    - 可以使用一种类型的删除器构造一个 shared_ptr，随后使用 reset 赋予此 shared_ptr 另一种类型的删除器
+    - `del ? del(p) : delete p; // del(p) 需要运行时跳转到 del 的地址`
+- 在编译时绑定删除器
+    - 对于 unique_ptr，删除器的类型时类类型的一部分
+    - 删除器可以直接保存在 unique_ptr 中
+    - `del(p); //无运行时额外开销`
+- 通过在编译时绑定删除器，unique_ptr 避免了间接调用删除器的运行时开销
+- 通过在运行时绑定删除器，shared_ptr 使用户重载删除器变得方便
