@@ -1371,3 +1371,36 @@ auto fcn(It beg, It end) -> decltype(*beg)
     template <typename T> void f(const T&); //左值和 const 右值
     ```
 
+### 16.2.6 理解 std::move
+标准库 move 函数是使用右值引用的模板的一个很好的例子
+
+- std::move 是如何定义的
+    - 标准库是这样定义 move 的
+        ```cpp
+        template <typename T>
+        typename remove_reference<T>::type&& move(T&& t){
+            return static_cast<typename remove_reference<T>::type&&>(t);
+        }
+        ```
+        ```cpp
+        string s1("hi!"), s2;
+        s2 = std::move(string("bye!"));
+        s2 = std::move(s1);
+        ```
+- std::move 是如何工作的
+    - 在 `std::move(string("bye!"))` 中传递一个右值
+        - 推断出的 T 的类型为 string
+        - remove_reference 用 string 进行实例化
+        - remove_reference<string> 的type 成员是 string
+        - move 的返回类型是 string&&
+        - move 的函数参数 t 的类型为 string&&
+    - `std::move()` 中传递一个左值
+        - 推断出的 T 的类型为 string& (string 的引用，而非普通 string)
+        - remove_reference 用 string& 进行实例化
+        - remove_reference<string&> 的 type 成员是 string
+        - move 的返回类型仍是 string&&
+        - move 的函数参数 t 实例化为 string& &&，折叠为 string&
+- 从一个左值 static_cast 到一个右值引用是允许的
+    - 通常情况下， static_cast 只能用于其他合法的类型转换
+    - 针对右值引用的特殊规则：虽然不能隐式地将一个左值转换为右值引用，但可以用 static_cast 显式地将一个左值转换为一个右值引用
+    - 对于操作右值引用地代码来说，将一个右值引用绑定到一个左值地特性允许它们阶截断左值
