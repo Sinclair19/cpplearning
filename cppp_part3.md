@@ -1404,3 +1404,34 @@ auto fcn(It beg, It end) -> decltype(*beg)
     - 通常情况下， static_cast 只能用于其他合法的类型转换
     - 针对右值引用的特殊规则：虽然不能隐式地将一个左值转换为右值引用，但可以用 static_cast 显式地将一个左值转换为一个右值引用
     - 对于操作右值引用地代码来说，将一个右值引用绑定到一个左值地特性允许它们阶截断左值
+
+### 16.2.7 转发
+某些函数需要将其一个或多个实参连同类型不变地转发给其他函数，在此情况下，我们需要保持被转发实参地所有性质，包括实参是否是 const 地以及实参是左值还是右值  
+- 定义能够保持类型信息地函数参数
+    - 需要使其参数能保持给定实参地左值性，更进一步，可以想到我们也希望保持参数的 const 属性
+    - 通过将一个函数参数定义为一个指向模板类型参数地右值引用，可以保持其对应实参地所有类型信息
+    ```cpp
+    template <typename F, typename T1, typename T2>
+    void flip2(F f, T1 &&t1, T2 &&t2){
+        f(t2,t1);
+    } 
+    ```
+    - 如果一个函数参数是指向模板类型参数地右值引用(如 T&&)，它对应的实参的 const 属性和左值/右值属性将得到保持
+- 在调用中使用 std::forward 保持类型信息
+    - 可以使用 forward 的标准库设施来传递 flip2 的参数，它能保持原始实参的类型
+    - 定义在头文件 utility 中
+    - 必须通过显式模板实参来调用
+    - 返回该显式实参类型的右值引用
+    ```cpp
+    template <typename Type> intermdiary(Type &&arg){
+        finalFcn(std::forward<Type>(arg));
+    } 
+    ```
+    - 当用于一个指向模板参数类型的右值引用函数参数(T&&) 时，forward 会保持实参类型的所有细节
+    ```cpp
+    template <typename F, typename T1, typename T2>
+    void flip(F f, T1 &&t1, T2 &&t2){
+        f(std::forward<T2>(t2), std::forward<T1>(t1));
+    }
+    ```
+    - 与 std::move 相同，对 std::forward 不使用 using 声明是一个好主意
