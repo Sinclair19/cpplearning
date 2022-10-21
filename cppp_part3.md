@@ -1506,3 +1506,30 @@ void foo(const T &t, const Args& ... rest);
             cout << sizeof...(Args) << endl;
             cout << sizeof...(args) << endl;
         }
+        ```
+
+### 16.4.1 编写可变参数函数模板
+可以使用一个 initializer_list 来定义一个可接受可变数目实参的函数  
+所有实参必须具有相同的类型（或他们的类型可以转换为同一个公共类型）  
+当我们既不知道想要处理的实参的数目也不知道它们的类型时，可变参数函数有用  
+可变参数函数通常是递归的，第一步调用处理包中的第一个实参，然后用剩余实参调用自身，为了终止递归，需要定义一个非可变参数 print 函数，接受一个流和一个对象
+```cpp
+template<typename T>
+ostream &print(ostream &os, const T &t){
+    return os << t;
+}
+template <typename T, typename... Args>
+ostream &print(ostream &os, const T &t, cosnt Args&... rest){
+    os << t << ",";
+    return print(os, rest...);
+}
+```
+
+第一个版本的 print 负责终止递归并打印初始调用中的最后一个实参  
+第二个版本的 print 是可变参数版本，打印绑定到 t 的实参，来调用自身来打印函数参数包中的剩余值
+可变参数版本的 print 接受三个参数  
+`return print(os, rest...)` 只传递了两个实参，故 rest... 中的第一个实参被绑定到 t ，
+剩余实参形成下一个 print 调用的参数包  
+每个调用中，包中的第一个实参会被移除，绑定为 t 的实参  
+对于最后一个调用，连个函数提供同样好的匹配，但是非可变参数模板比可变参数模板更特例化，因此编译器选择非可变参数版本
+当定义可变参数版本的 print 时，非可变参数版本的声明必须在作用域中，否则，可变参数版本会无限递归
