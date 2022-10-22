@@ -1533,3 +1533,31 @@ ostream &print(ostream &os, const T &t, cosnt Args&... rest){
 每个调用中，包中的第一个实参会被移除，绑定为 t 的实参  
 对于最后一个调用，连个函数提供同样好的匹配，但是非可变参数模板比可变参数模板更特例化，因此编译器选择非可变参数版本
 当定义可变参数版本的 print 时，非可变参数版本的声明必须在作用域中，否则，可变参数版本会无限递归
+
+### 16.4.2 包扩展
+对于一个参数包，除了获取其大小外，能对它做的唯一的事情就是扩展它  
+当扩展一个包时，还要提供用于每个扩展元素的模式  
+扩展一个包就是将他分解为构成的元素，对每个元素应用模式，获得扩展后的列表通过在模式右边放一个省略号来触发扩展操作  
+```cpp
+template <typename T, typename... Args>
+ostream & print(ostream &os, const T &t, const Args&... rest){
+    os << t << ", ";
+    return print(os, rest...);
+}
+```
+调用 `print(cout, i, s, 42);`
+被实例化为
+`ostream& print(ostream&, const int&, cosnt string&, const int&`  
+
+- 理解包扩展
+    - print 中的函数参数包扩展仅仅将包扩展为其构成
+    - 可以编写第二个可变参数函数
+        ```cpp
+        template <typename... Args>
+        ostream &errorMsg(ostream &os, const Args&... rest){
+            return print(os, debug_rep(rest)...);
+        }
+        ```
+    - 调用 `errorMsg(cerr, fcnName, code.num(), otherData, "other", item);`
+        - 可等价为 `print(cerr, debug_rep(fcnName), debug_rep(code .unm()), debug_rep(otherData), debug_rep("otherData"), debug_rep(item);`
+    - 扩展中的模式会独立地应用于包中的每个元素
