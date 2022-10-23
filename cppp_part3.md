@@ -1561,3 +1561,71 @@ ostream & print(ostream &os, const T &t, const Args&... rest){
     - 调用 `errorMsg(cerr, fcnName, code.num(), otherData, "other", item);`
         - 可等价为 `print(cerr, debug_rep(fcnName), debug_rep(code .unm()), debug_rep(otherData), debug_rep("otherData"), debug_rep(item);`
     - 扩展中的模式会独立地应用于包中的每个元素
+
+### 16.4.3 转发参数包
+可以组合使用可变参数模板与 forward 机制来编写函数，实现将其实参不变地传递给其他函数  
+为了保持实参中的类型信息，必须将 emplace_back 的函数参数定义为模板类型参数的右值引用
+```cpp
+class StrVec {
+public:
+    template <class... Args> void emplace_back(Args&&...);
+};
+```
+模板参数包扩展中的模式是 && ，意味着每个函数参数将是一个指向其对应实参的右值引用  
+当 emplace_back 将这些实参传递给 construct时，我们必须使用 forward 来保持实参的原始类型
+```cpp
+template <class... Args>
+inline void StrVec::emplace_back(Args&&... args){
+    chk_n_alloc();
+    alloc.construct(first_free++, std::forward<Args>(args)...);
+}
+```
+emplace_back 的函数体调用了 chk_n_alloc 来确保有足够的空间容纳一个新元素，然后调用了 construct 在 first_free 指向的位置中创建ige元素  
+cosntruct 调用的扩展为 `std::forward<Ti>(tj)` 
+Ti表示模板参数包中第 i 个元素的类型，ti 表示函数参数包中第 i 个元素
+
+## 16.5 模板特例化
+当我们不能或不希望使用模板版本时，可以定义类或函数模板的一个特例化版本  
+一个特例化版本就是模板的一个独立的定义，在其中一个或多个模板参数被指定为特定的类型
+- 定义函数模板特例化
+    - 当特例化一个函数模板时，必须为原模版中的每个模板参数都提供实参
+    - 使用关键词 template 后跟一个空尖括号对，其指出我们将为原模板的所有模板参数提供实参
+        ```cpp
+        tempalte <> int compare(const char* const &p1, const char* cosnt &p2){
+            return strcmp(p1, p2);
+        } 
+        ```
+        const char* const & 一个指向 const char 的 cosnt 指针的引用
+- 函数重载与模板特例化
+    - 当定义函数模板的特例化版本时，本质上接管了编译器的工作，即为原模板的一个特殊实例提供了定义  
+    - 一个特例化版本本质上是一个实例，而非函数名的一个重载版本
+    - 特例化的本质是实例化一个模板，而非重载它，特例化不影响函数匹配
+    - 当一个非模板函数提供与模板同样好的匹配时，编译器会选择非模板版本
+- 类模板特例化
+    - 定义一个标准库 hash 的特例化版本，需要定义
+        - 一个重载的调用运算符，接受一个容器关键字类型的对象，返回一个 size_t
+        - 两个类型成员，result_type 和 argument_type，分别调用运算符的返回类型和参数类型
+        - 默认构造函数和拷贝赋值运算符
+    - 必须在原模版定义所在的命名空间中特例化, 向命名空间添加成员必须打开命名空间
+    ```cpp
+    namespace std {
+    template <> struct hash<Sales_data> {
+        typedef size_t result_type;
+        typedef Sales_data argument_type;
+        size_t operator()(const Sales_data& s) const;
+    };
+    size_t hash<Sales_data>::operator()(const Sales_data& s) const{
+        return hash<string>()(s.bookNo) ^
+               hash<unsigned>()(s.units_sold) ^
+               hash<double>()(s.revenue);
+    }
+    } 
+    ```
+    - 为了让 Sales_data 的用户能使用 hash 的特例化版本，我们应该在 Sales_data 的头文件中定义该特例化版本
+- 类模板部分特例化
+    - 类模板的特例化不必为所有模板参数提供实参，可以只指定一部分而非所有模板参数，或是参数的一部分而非全部特性
+    - 一个类模板的部分特例化本身是一个模板，使用它时用户必须为哪些在特例化版本中未指定的模板参数提供实参
+    - 只能部分特例化类模板，而不能部分特例化函数模板
+    - 部分特例化版本的模板参数列表是原始模板的参数列表的一个子集或者一个特例化版本
+- 特例化成员而不是类
+    - 可以只特例化特定成员函数而不是特例化整个模板
