@@ -17,3 +17,35 @@ tuple 类型及其伴随类型的函数都定义在 tuple 头文件中
 8. `tuple_element<i, tupleType>::type` 一个类模板，可以通过一个整形常量和一个 tuple 类型来初始化，有一个名为 type 的 public 成员，表示给定 tuple 类型中指定成员的类型
 
 可以将 tuple 看作一个快速而随意的数据结构
+
+### 17.1.1 定义和初始化 tuple
+定义一个 tuple时，需要指出每个成员的类型  
+可以使用 tuple默认构造函数对每个成员进行初始化  
+该构造函数为 explicit 的，必须使用直接初始化语法
+```cpp
+tuple<size_t, size_t, size_t> threeD = {1,2,3}; //incorrect
+tuple<size_t, size_t, size_t> threeD{1,2,3}; //correct
+```
+可以使用 make_tuple 生成 tuple 对象，
+其使用初始值的类型来推断 tuple 的类型
+
+- 访问 tuple 的成员
+    - 使用 get 标准库函数模板
+    - 指定一个显式模板实参指出像访问第几个成员
+        ```cpp
+        auto book = get<0>(item);  //返回第一个成员
+        auto cnt = get<1>(item);  //返回第二个成员
+        auto price = get<2>(item)/cnt;  //返回item最后一个成员
+        get<2>(item) *= 0.8; //打折20%
+        ```
+    - <> 中必须是一个整型常量表达式，从 0 开始计数
+    - 查询 tuple 成员的数量和类型
+        ```cpp
+        typedef decltype(item) trans;
+        size_t sz = tuple_size<trans>::value; // 返回成员个数
+        tuple_element<1, trans>::type cnt = get<1>(item); // cnt 是一个 int
+        ```
+    - 关系和相等运算符
+        - tuple 的关系和相等运算符的行为类似容器的对应操作，逐对比较左侧 tuple 和右侧 tuple 的成员
+        - 只有两个 tuple 具有相同数量的成员时，才可以比较它们，且每对成员的的比较运算符都必须合法
+        - tuple 定义了 < 和 == 运算符，可以将 tuple 序列传递给算法，可以在无序容器中将 tuple 作为关键字类型 
