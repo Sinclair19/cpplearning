@@ -49,3 +49,42 @@ tuple<size_t, size_t, size_t> threeD{1,2,3}; //correct
         - tuple 的关系和相等运算符的行为类似容器的对应操作，逐对比较左侧 tuple 和右侧 tuple 的成员
         - 只有两个 tuple 具有相同数量的成员时，才可以比较它们，且每对成员的的比较运算符都必须合法
         - tuple 定义了 < 和 == 运算符，可以将 tuple 序列传递给算法，可以在无序容器中将 tuple 作为关键字类型 
+
+### 17.1.2 使用 tuple 返回多个值
+tuple 的一个常见用途是从一个函数返回多个值
+- 返回 tuple 的函数
+    - 编写查找给定书籍的函数
+        
+        ```cpp
+        typedef tuple<vector<Sales_data>::size_type, vector<Sales_data>::const_iterator, vector<Sales_data>::const_iterator> matches;
+        vector<matches> findBook(const vector<vector<Sales_data>> &files, cosnt string &book){
+            vector<matches> ret;
+            for (auto it = files.cbegin(); it != files.cend(); ++it){
+                auto found = equal_range(it->cbegin(),it->cend(),book, compareIsbn);
+                if (found.first != found.second){
+                    ret.push_back(make_tuple(it - files.cbegin(), found.first, found.second));
+                }
+            }
+            return ret;
+        }
+        ```
+    - equal_range 标准库算法
+        - 前两个实参是输入序列的爹大气，第三个参数是一个值
+        - 默认情况下 equal_range 使用 < 运算符来比较元素
+        - 返回一个迭代器 pair，表示元素的范围，若未找到则两个迭代器相等，表示空范围，否则 pair 的 first 成员表示第一台匹配的记录，second 表示匹配的尾后尾置 
+- 使用函数返回的 tuple
+    ```cpp
+    void reportResults(istream &in, ostream &os, const vector<vector<Sales_data>> &files){
+        string s;
+        while (in >> s){
+            auto trans = findBook(files, s);
+            if (trans.empty()){
+                cout << s << "not found in any stores" << endl;
+            }
+            for (const auto &store : trans){
+                os << "stores" << get<0>(store) <<" sales: "<< accumulate(get<1>(store), get <2>(store), Sales_data(s)) << endl;
+            }
+        }
+    }
+    ```
+    
