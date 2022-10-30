@@ -118,3 +118,13 @@ bitvec 包含编号从 0 到 31 的 32 个二进制位
         bitset<32> bitvec5(str, 5, 4); //从 str[5]开始的 4个二进制位
         bitset<32> bitvec6(str, str.size()-4); // 使用最后四个字符
         ```
+
+## 17.3 正则表达式
+正则表达式是一种描述字符序列的方法  
+C++ 正则表达式库(RE库)，定义在 regex 中
+- regex 表示有一个正则表达式的类
+- regex_search 寻找第一个与正则表达式匹配的子序列
+- regex_replace 使用给定格式替换一个正则表达式
+- sregex_iterator 迭代器适配器，调用 regex_search 来遍历一个 string 中所有匹配的子串
+- smatch 容器类，保存在 string 中搜索的结果
+- ssub_match string 中匹配的子表达式的结果
