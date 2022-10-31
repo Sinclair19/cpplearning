@@ -128,3 +128,41 @@ C++ 正则表达式库(RE库)，定义在 regex 中
 - sregex_iterator 迭代器适配器，调用 regex_search 来遍历一个 string 中所有匹配的子串
 - smatch 容器类，保存在 string 中搜索的结果
 - ssub_match string 中匹配的子表达式的结果
+
+函数 regex_match 和 regex_search 确定一个给定字符序列与一个给定 regex 是否匹配，如果输入序列中一个子串与表达式匹配，则 regex_search 函数返回 true  
+- regex_search 和 regex_match 的参数  返回 bool 值，指出是否找到匹配
+    - (seq, m, r, mft) 在字符串 seq 中查找 regex 对象 r 中的正则表达式， seq 可以是一个 string、表示范围的一对迭代器以及一个指向空字符结尾的字符数组的指针
+    - (seq, r, mft) m 是一个 match 对象，用来保存匹配结果的相关细节。m 和 seq 必须具有兼容的类型，mft 是一个可选的 regex_constants::match_flag_type 值
+
+
+### 17.3.1 使用正则表达式库
+```cpp
+string pattern("[^c]ei");
+pattern = "[[:alpha:]]*" + pattern + "[[:alpha:]]";
+regex r(pattern);
+smatch results;
+string test_str = "receipt freind theif receive";
+if (regex_search(test_str, result, r))
+    cout << result.str() << endl;
+```
+
+[^c] 表明希望匹配任意不是 'c' 的字符，而 [^c]ei 指出想要匹配这种字符后接 ei 的字符串  
+默认情况下 regex 使用的正则表达式语言为 ECMAScript  
+`[[::alpha]]` 匹配任意字幕  
+`+` `*` 表示希望一个或多个 或 零个或多个 匹配  `[[::alpha:]]*` 将匹配零个或多个字母
+
+- 指定 regex 对象的选项
+    - 当我们定义一个 regex 或是对一个 regex 调用 assign 为其赋予新值时，可以指定一些标志来影响 regex 如何操作，这些标志控制 regex 如何操作，控制 regex 对象的处理过程
+
+![regex 和 wrgex 选项](./sources/17_3_1_1.png)
+
+编写一个正则表达式来识别上述任何一种扩展名邮寄其他普通文件扩展名
+
+```cpp
+regex r("[[:alnum:]]+\\.(cpp|cxx|cc)$", regex::icase);
+smatch results;
+string filename;
+while(cin >> filename)
+    if (regex_search(filename, results, r))
+        cout << results.str << endl;
+```
