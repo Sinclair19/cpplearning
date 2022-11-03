@@ -164,5 +164,29 @@ smatch results;
 string filename;
 while(cin >> filename)
     if (regex_search(filename, results, r))
-        cout << results.str << endl;
+        cout << results.str() << endl;
 ```
+
+- 指定或使用正则表达式时的错误
+    - 可以将正则表达式本身看作用一种简单程序设计语言编写的程序，正则表达式是在运行时，当一个 regex 对象被初始化或被赋予一个新模式时，才被“编译”的，与任何其他程序设计语言一样
+    - 一个正则表达式的语法是否正确是在运行时解析的
+    - 如果编写正则表达式存在错误，则在运行时会抛出一个类型为 regex_error 的异常，类似标准异常类型，regex_error 有一个 what 操作来描述发生了什么错误
+    - regex error 还有名为 code 的成员，用来返回某个错误类型对应的数值编码
+        ```cpp
+        try {
+            regex r("[[:alnum:]+\\.(cpp|cxx|cc)$", regex::icase);
+        } catch (regex_error e)
+        { cout<< e.what() << "\ncode:" << e.code() << endl; }
+        ```
+    - 正则表达式错误类型
+        ![正则表达式错误类型](./sources/17_3_1_2.png)
+
+- 正则表达式类和输入序列类型
+    - 输入可以是普通 char 数据或 wchar_t 数据，字符可以保存在标准库 string 或是 char 数组中。 RE 为这些不同的输入序列都定义了对应的类型
+    - 标准库还定义了一个 wregex 类保存 wachar_t，其操作与 regex 完全相同，两者唯一的差别是 wregex 的初始值必须使用 wchar_t 而不是 char
+    - 匹配和迭代器类型更为特殊，类型的差异不仅在于字符类型，还在于序列是在标准库 string 中还是在数组中，smatch 表示 string 类型的输入序列; cmatch 表示字符数组序列; wsmatch 表示宽字符串 (wstring) 输入; wcmatch 表示宽字符数组
+    - 对应的 string 版本 RE 库组件
+        - `string`  regex, smatch, ssub_match, sregex_iterator
+        - `const char*` regex, cmatch, csub_match, cregex_iterator
+        - `wstring` wregex, wsmatch, wssub_match, wsregex_iterator
+        - `const wchar_t*` wregex, wcmatch, wcsub_match, wcregex_iterator
