@@ -190,3 +190,39 @@ while(cin >> filename)
         - `const char*` regex, cmatch, csub_match, cregex_iterator
         - `wstring` wregex, wsmatch, wssub_match, wsregex_iterator
         - `const wchar_t*` wregex, wcmatch, wcsub_match, wcregex_iterator
+
+
+### 17.3.2 匹配与 regex 迭代器类型
+使用 sregex_iterator 来获得所有匹配
+- sergex_iterator 操作
+    |||
+    |---|---|
+    |`sregex_iterator it(b, e, r);`|一个 seregex_iterator，遍历迭代器 b 和 e 表示的 string。调用 sregex_search(b, e, r) 将 it 定位到输入中第一个匹配的位置|
+    |`sregex_iterator end;`|sregex_iterator 的尾后迭代器|
+    |`*it` <br> `it->`|根据最后一个调用 regex_search 的结果，返回一个 smatch 对象的引用或一个指向 smatch 对象的指针|
+    |`++it` <br> `it++`|从输入序列当前匹配位置开始调用 regex_search。前置版本返回递增后迭代器，后置版本返回旧值|
+    |`it1 == it2` <br>`it1 != it2`|如果两个 sregex_iterator 都是尾后迭代器，则它们相等两个非尾后迭代器是从相同的输入序列和 regex 对象构造，则它们相等|
+    当将一个 sregex_iterator 绑定到一个 string 和一个 regex 对象时，迭代器自动定位到给定 string 中第一个匹配位置  
+    sregex_iterator 构造函数对给定 string 和 regex 调用 regex_search, 当我们解引用迭代器时，会得到一个对应最近一次搜索结果的 smatch 对象，递增迭代器时，调用 regex_search 在输入 string 中查找下一个匹配
+- 使用 sregex_iterator
+    ```cpp
+    string pattern("[^c]ei");
+    pattern = "[[:alpha:]]*" + pattern + "[[:alpha:]]*";
+    regex r(pattern, regex::icase);
+    for (sregex_iterator it(file.begin(), file.end(), r), end_it; it != end_it; ++it)
+        cout << it->str() << endl;
+    ```
+- 使用匹配数据
+    - smatch 和 ssub_match 允许我们获得匹配的上下文
+    - 匹配类型有 prefix 和 suffix 成员，分别返回舒徐序列中当前匹配和之后部分的 ssub_match 对象
+    - 一个 ssub_match 对象有两个名为 str 和 length 的成员，分别返回匹配的 string 和该 string 的大小
+    - it -> prefix().str() | it -> str | it ->suffix().str()
+        ```cpp
+        for (sregex_iterator it(file.begin(),file.end(), r), end_it; it != end_it; ++it){
+            auto pos = it->prefix().length();
+            pos = pos >40 ? pos -40 : 0;
+            cout << it ->prefix().str().substr(pos) << "\n\t\t>>>" << it->str() <<"<<<\n" << it->suffix().str().substr(0,40) << endl
+        }
+        ```
+    - smatch 操作
+        ![smatch 操作](sources/17_3_2_1.png)
