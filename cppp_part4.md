@@ -226,3 +226,31 @@ while(cin >> filename)
         ```
     - smatch 操作
         ![smatch 操作](sources/17_3_2_1.png)
+
+
+### 17.3.3 使用子表达式
+正则表达式中的模式通常包含一个或多个子表达式，一个子表达式是模式的一部分，本省也具有意义  
+正则表达式语法通常用括号表示子表达式  
+匹配对象除了提供匹配整体的相关信息外，还提供访问模式中每个子表达式的能力  
+子匹配是按位置来访问的，第一个子匹配位置为 0，表示整个模式对应的匹配，随后是每个子表达式对应的匹配  
+eg  
+    filename -- foo.cpp 
+results.str(0) -- foo.cpp 
+results.str(1) -- foo
+results.str(2) -- cpp
+
+- 子表达式用于数据验证
+    - 子表达式的一个常见用途是验证必须匹配特定格式的数据
+    - ECMAScript 正则表达式语言的一些特性
+        - `\{d}` 表示单个数字，而 `\{d}{n}` 表示一个 n 个数字的序列
+        - 在方括号中的字符集合表示匹配这些字符中任意一个 (eg : `[-. ]`匹配短横线，点或空格)
+        - 后接 `?` 的组件是可选的
+        - 类似 C++， ECMAScript 使用反斜线表示一个字符本身而不是其特殊含义，由于模式包含括号，而括号是 EMCMAScript 中的特殊字符，因此必须使用 `\()` 来表示括号是我们模式的一部分而不是特殊字符
+        - 反斜线是 C++ 特殊字符，在模式中出现 \ 的地方，必须用一个额外的反斜线来告知 C++ 需要一个反斜线字符而不是一个特殊符号
+- 使用子匹配操作
+    - 适用于 ssub_match, csub_match, wssub_match, wcsub_match
+    - `matched` : 一个`publicboo`l数据成员，指出此`ssub_match` 是否匹配了
+    - `first` `second` : `public` 数据成员, 指向匹配序列首元素和尾后位置的迭代器，如果未匹配，则 `first `和 `second` 是相等的
+    - `length()` : 匹配的大小，如果 `match` 为 false，则返回 0
+    - `str()` : 返回一个包含输入中匹配部分的 string，如果 `matched` 为 false，则返回空 string
+    - `s = ssub` : 将 `ssub_match` 对象 ssub 转化为 string 对象 s，等价于 `s=ssub.str()` 转换运算符不是 explicit 的
