@@ -254,3 +254,37 @@ results.str(2) -- cpp
     - `length()` : 匹配的大小，如果 `match` 为 false，则返回 0
     - `str()` : 返回一个包含输入中匹配部分的 string，如果 `matched` 为 false，则返回空 string
     - `s = ssub` : 将 `ssub_match` 对象 ssub 转化为 string 对象 s，等价于 `s=ssub.str()` 转换运算符不是 explicit 的
+
+### 17.3.4 使用 `regex_replace`
+正则表达式还可以用在我们想将找到的序列替换为另一个序列的时候  
+调用 `regex_replace`，接受一个输入字符序列和一个 `regex` 对象，还接受一个描述我们想要的输出形式字符串
+- 正则表达式替换操作
+    - `m.format(dest,fmt,mft)`  `m.format(fmt,mft)`
+        - 使用格式字符串 fmt 生成格式化输出，匹配在 m 中，可选的 `match_flag_type` 标志在 mft 中  第一个版本写入迭代器 dest 指向的目的位置并接受 fmt 参数，可以是一个 string，也可以是表示字符数组中范围的一对指针  第二个版本返回一个 string，也可以是一个指向空字符结尾的字符数组的指针  mft 的默认值为 `format_default`
+    - `regex_replace(dest, seq, r, fmt, mft)`  `regex_replace(seq, r, fmt, mft)`
+        - 遍历 seq ，用 regex_search 查找与 regex 对象 r 匹配的子串  使用格式化字符串 fmt 和可选的  `match_flag_type` 标志来生成输出  第一个版本将输出写入到迭代器 dest 指定的位置，并接受一对迭代器 seq 表示范围  第二个版本返回一个 string，保存输出，且 seq 既可以是一个 string，也可以是指向空字符串结尾的字符中数组的指针，且 mft 的默认值为 `match_default`
+    - 可以用 `$` 后跟子表达式的索引号来表示一个特定的子表达式
+- 只替换输入序列的一部分
+- 用来控制匹配和格式的标志
+    - 标准库定义了用来在替换过程中控制匹配或格式的标志，这些标志可以传递给函数 regex_search 或 regex_match 或是类 smatch 的 format 成员
+    - 匹配和格式化标志的类型名为 match_flag_type，值定义在 regex_constants 命名空间中
+    - 为了使用 regex_constants 中的名字，需要在名字前同时加上两个命名空间的限定符  `using std::regex_constants::format_no_copy`  `using namespace std::regex_constants;`
+    - 匹配标志 （定义在`regex_constants::match_flag_type`中）
+        - `match_default` : 等价于 format_default
+        - `match_not_bol` : 不将首字符作为行首处理
+        - `match_not_eol` : 不将尾字符作为行尾处理
+        - `match_not_bow` : 不将首字符作为单词首处理
+        - `match_not_eow` : 不将首字符作为单词尾处理
+        - `match_any` : 如果存在多余一个匹配，则可返回任意一个匹配
+        - `match_not_null` : 不匹配任何空序列
+        - `match_continuous` : 匹配必须从输入的首字符开始
+        - `match_prev_avail` : 输入序列包含第一个匹配之前的内容
+        - `format_default` : 用 ECMAScript 规则替换字符串
+        - `format_sed` : 用 POSIX sed 规则替换字符串
+        - `format_no_copy` : 不输出输入序列中未匹配的部分
+        - `format_first_only` : 只替换子表达式的第一次出现
+- 使用格式标志
+    - 默认情况下 regex_replace 输出整个输入序列
+    - 未与正则表示式匹配的部分会原样输出
+    - 匹配的部分按格式字符串指定的格式输出
+    - 可以通过 regex_replace 调用中指定 format_no_copy 来改变这种默认行为
