@@ -494,3 +494,66 @@ endl 输出一个换行符并刷新缓冲区
 - 确定读取了多少个字符
     - 可以调用 gcount 来确定最后一个未格式化输入操作读取了多少个字符，应该在任何后续未格式化输入操作之前调用 gcount
     - 如果在调用 gcount 之前调用了 peek unget putback 则gcount 返回值为 0
+
+
+### 17.5.3 流随机访问
+各种流类型通常都支持对流中数据的随机访问，可以重定位流，使之跳过一些数据  
+标准库提供了一堆函数，来定位(seek)到流中给定的位置，以及(tell)我们当前的位置  
+随机 IO 本质上是依赖于系统的，为了理解如何使用这种特性，必须查询系统文档  
+虽然标准库为所有类型的流都定义了 seek 和 tell 函数，但它们是否会做有意义的事请依赖于流绑定到哪个设备，在大多数系统中，绑定到 cin cout cerr 和 clog 的流不支持随机访问  
+
+由于 istream 和 ostream 类型通常不支持随机访问，所以本节剩余内容只适用于 fstream 和 sstream 类型
+
+- seek 和 tell 函数
+    - IO 类型维护一个标记来确定下一个读写操作要在哪里进行
+    - 提供两个函数
+        - 通过将标记 seek 到一个给定位置来重定位它
+        - tell 告知当前标记位置
+    - g 版本对应读取
+    - p 版本对应写入
+- 只有一个标记
+    - 在单一流中只维护单一标记，并不存在独立的读标记和写标记
+    - 在可读写的流中，标准库将 g 和 p 版本的读写位置都映射到这个单一的标记
+    - 由于只有单一的标记，因此只要我们在读写操作间切换，就必须进行 seek 操作来重定位标记
+- 重定位标记
+    - seek 函数两个版本
+        - 一个移动到文件中的绝对地址  `seek(new_position);` 
+        - 一个移动到一个给定位置的指定偏移量  `seek(offset, from);`
+        - 参数 new_positon 和 offset 的类型分别是 pos_type 和 off_type
+- 访问标记
+    - 函数 tellg 和 tellp 返回一个 pos_type 值，表示流的当前位置
+    - tell 函数通常用来记住一个位置，以便移后在定位回来
+        ```cpp
+        ostringstream writeStr;
+        ostringstream::pos_type mark = writeStr.tellp();
+        if (cancelEntry)
+            writeStr.seekp(mark);
+        ```
+- 读写同一个文件
+    - 给定一个要读取的文件，在此文件的末尾写入新的一行，这一行包含文件中每行的相对起始位置
+    ```cpp
+    int main(){
+        fstream inOut ("copyOut", fstream::ate | fstream::in | fstream::out);
+        if (!inOut) {
+            cerr << "Unable to open file!" << endl;
+            return EXIT_FALLURE;
+        }
+        auto end_mark = inOut.tellg();
+        inOut.seekg(0, fstream::beg);
+        size_t cnt = 0;
+        string line;
+        while (inOut && inOut.tellg() != end_mark && getline(inOut,line)){
+            cnt += line.size() + 1;
+            auto mark = inOut.tellg();
+            inOut.seekp(0,fstream::end);
+            inOut << cnt;
+            if (mark != end_mark) inOut << " ";
+            inOut.seekg(mark);
+        }
+        inOut.seekp(0, fstream::end);
+        inOut << '\n';
+        return 0;
+    }
+    ```
+    - in out 指出想读写同一个文件，ate 会将读写标记定位到文件尾
+    - 将原文件尾标记在 end_mark 中
