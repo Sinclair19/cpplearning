@@ -650,3 +650,29 @@ C++ 11 中，可以通过 noexcept 说明指定某个函数不会抛出异常
     - 尽管 noexcept 说明符不属于函数类型的一部分，但是函数的异常说明仍然会影响函数的使用
     - 函数指针及该指针所指的函数必须具有一致的异常说明，如果我们为某个指针做了不抛出异常说明，则该指针只能指向不抛出异常的函数，即使是承诺了不抛出异常的函数也可以
     - 如果一个虚函数承诺了它不会抛出异常，则后续派生出来的虚函数也必须做出同样的承诺，与之相反，如果基类的虚函数允许抛出异常，则派生类的对应函数既可以允许抛出异常，也可以不允许抛出异常
+
+
+### 18.1.5 异常类层次
+标准 exception 类层次
+![标准 exception 类层次](./sources/18_1_5_1.png)
+- 类型 exception 仅仅定义了拷贝构造函数，拷贝赋值运算符，一个虚析构函数和一个名为 what 的虚成员
+- what 函数返回一个 const char*，该指针指向一个以 unll 结尾的字符数组，以确保不会抛出异常
+- 类 exception、bat_cast 和 bad_alloc 定义了默认构造函数
+- 类 runtime_error 和 logic_error 没有默认构造函数，但是有一个可以接受 C 风格字符串或者标准库 string 类型实参的构造函数
+- 书店应用程序的异常类
+    ```cpp
+    class out_of_stock: public std::runtime_error {
+    public:
+        explicit out_of_stock(const std::string &s): std::runtime_error(s){ }
+    };
+    class isbn_mismatch: public std::logic_error {
+    public:
+        explicit isbn_mismatch(const std::string &s): std::logic_error(s) { }
+        isbn_mismatch(const std::string &lhs, const std::string &rhs):
+            std::logic_error(s), left(lhs), right(rhs) { }
+        const std::string left, right;
+    };
+    ```
+- 使用我们自己的异常类型
+    - 当使用自定义异常类的方式与使用标准异常类的方式完全相同
+    - 程序在某处抛出异常类型的对象，在灵位的地方捕获并处理这些出现的问题
